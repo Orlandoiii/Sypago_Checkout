@@ -1,0 +1,4 @@
+{
+    "sypago_url": "http://192.168.120.110:8086",
+    "sypago_callback_url": "http://localhost:5000"
+}
