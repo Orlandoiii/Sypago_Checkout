@@ -13,8 +13,6 @@ const router = createBrowserRouter([
   {
     path: "/checkout/:id",
     element: <CheckoutPage isBlueprint={false} />,
-
-
   },
   {
     path: "/checkout/blueprint/:id",
@@ -42,8 +40,6 @@ function App() {
 
     <>
       <RouterProvider router={router} />
-
-
     </>
 
   )

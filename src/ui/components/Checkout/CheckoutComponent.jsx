@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import logger from "../../../logic/Logger/logger";
 import { useTransaction } from "../../contexts/TransactionContext";
 import SypagoLogo from "../../core/logo/SypagoLogo";
@@ -13,6 +13,7 @@ import { isMobile } from "react-device-detect";
 import DetailConfirmation from "../DetailConfirmation/DetailConfirmation";
 import OtpForm from "./Forms/OtpForm";
 import Modal from "../../core/modal/Modal";
+import NotificationModal from "../../core/notifications/NotificationModal";
 
 const translateXeffect = {
     effectVisible: "translate-x-0",
@@ -57,6 +58,11 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
     const [openOtp, setOpenOtp] = useState(false);
 
+    const [receptSubmitData, setReceptSubmitData] = useState({});
+
+
+    const timeoutPayRef = useRef(null);
+
     const { config } = useConfig();
 
     const sypagoUrl = config.sypago_url + "/CheckoutHub";
@@ -68,8 +74,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
 
     const [confirmationData, setConfirmationData] = useState([])
-
-
 
     function onSubmitPayForm(data) {
 
@@ -121,7 +125,19 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             ]
         }
 
+        const receptData = {
+            bank_code: receivingUserData.bank_code,
+            doc_number: receivingUserData.doc_number,
+            doc_prefix: receivingUserData.doc_prefix,
+            acct_type: receivingUserData.acct_type,
+            acct_number: receivingUserData.acct_type == "CELE" ?
+                receivingUserData.phone : receivingUserData.acct,
+        }
+
+
         if (amount.type != "NONE" && amount.amt != receivingUserData.amt) {
+
+            receptData.pay_amt = parseFloat(receivingUserData.amt);
             emisorObj.section_data.push(
                 {
                     name: "Monto Cobrado",
@@ -131,7 +147,11 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 name: "Monto Pagado",
                 data: receivingUserData.amt
             })
-        } else {
+        }
+        else {
+
+            receptData.pay_amt = parseFloat(amount.amt);
+
             emisorObj.section_data.push(
                 {
                     name: "Monto",
@@ -141,14 +161,88 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
         const detailData = [emisorObj, receptObj];
 
+
+
+
+        setReceptSubmitData(receptData);
         setConfirmationData(detailData);
         setOpenDetail(true);
+
 
     }
 
     function onConfirm() {
         setOpenDetail(false);
         setOpenOtp(true);
+    }
+
+    function onSubmitOtp(otpValue) {
+
+        logger.info("OTP Value:", otpValue);
+
+
+        const transaction = receptSubmitData;
+
+        const payAmt = transaction.pay_amt;
+
+        const typeOfDoc = transaction.doc_prefix;
+
+        const acctType = transaction.acct_type == "CELE" ? 1 : 0;
+
+        const otp = otpValue;
+
+        const receptUser = {
+            Id: typeOfDoc + transaction.doc_number,
+            Account: {
+                BankCode: transaction.bank_code,
+                Id: transaction.acct_number,
+                Tp: acctType,
+            }
+        }
+
+        SignalRService.AcceptTransaction(transactionId, payAmt,
+            receptUser, otp, isBlueprint
+        ).then(result => {
+
+            if (result && result.isSuccessful) {
+
+                timeoutPayRef.current = setTimeout(() => {
+                    setLoadModalMessage("");
+                    setOpenLoadModal(false);
+                    openAlertNotification("error", `Lo sentimos pero tenemos incovenientes 
+                        por favor verifique con su banco si los fondos han sido DEBITADOS REF:${transactionId}`)
+                }, 5000)
+
+                return;
+
+            }
+
+
+            if (!result || !result.isSuccessful) {
+
+
+
+            }
+        }).catch(err => {
+
+        });
+
+        setLoadModalMessage("Procesando Pago");
+        setOpenLoadModal(true);
+        setOpenOtp(false);
+
+
+
+    }
+
+
+    const onNotify = async (r, hash) => {
+
+        // logger.info("Llego Notificacion a la vista", r);
+
+        // if (timeoutPayRef.current)
+        //     clearInterval(timeoutPayRef.current);
+
     }
 
 
@@ -209,6 +303,8 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                                 return;
                             }
 
+
+
                             dispatch({ type: "transaction/setdata", payload: { transactionData: t.value } })
                         }).catch(err => {
 
@@ -241,7 +337,12 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             setOpenLoadModal(false);
         }
 
+        if (dataIsLoaded)
+            SignalRService.notificationSub = onNotify;
+
     }, [dataIsLoaded])
+
+
 
 
     logger.log("Renderizo CheckoutComponent with data:", transactionState.transactionData)
@@ -250,15 +351,20 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
     return (
         <>
             <div className='bg-transparent w-full h-screen flex justify-center items-center rounded-md shadow-md'>
-                <main className='bg-[#0B416E] flex flex-col  md:flex-row w-full h-full max-h-[1080px] max-w-[1920px] overflow-x-hidden'>
+
+                <main className='relative bg-[#0B416E] flex flex-col  md:flex-row w-full h-full max-h-[1080px] max-w-[1920px] overflow-x-hidden '>
+
+                    {!transactionState.isLoaded() && <div className="absolute top-1/2 left-1/2 transform 
+                    -translate-x-1/2 -translate-y-1/2
+                    flex justify-center items-center">
+                        <div className="w-[350px] md:w-[560px] h-auto block">
+                            <SypagoLogo negative={true} />
+                        </div>
+                    </div>}
 
                     <section className='w-full  md:w-[50%] h-full'>
 
-                        {!transactionState.isLoaded() && <div className="w-full h-full flex justify-center items-center">
-                            <div className="w-[380px] h-auto mb-8 block">
-                                <SypagoLogo negative={true} />
-                            </div>
-                        </div>}
+
 
 
                         <div className={`w-full h-full transition-all ease-in-out duration-700
@@ -299,6 +405,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                         </div>
 
                     </section>
+
                 </main>
             </div >
 
@@ -309,14 +416,30 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 onConfirm={onConfirm}
             />
 
-            <Modal open={openOtp} showX={true} onClose={() => { setOpenOtp(false) }}>
-                <OtpForm otpLen={8} timerTime={35} />
+
+
+            <Modal
+                open={openOtp}
+                showX={true}
+                onClose={() => { setOpenOtp(false) }}>
+                <OtpForm
+                    otpLen={8}
+                    timerTime={35}
+                    isBlueprint={isBlueprint}
+                    transactionId={transactionId}
+                    transactionData={receptSubmitData}
+                    onSubmitOtpEvent={onSubmitOtp}
+                />
             </Modal>
+
+            <NotificationModal />
 
             <LoadModal
                 open={openLoadModal}
                 message={loadModalMessage}
                 subscribeToController={false} />
+
+
         </>
 
 

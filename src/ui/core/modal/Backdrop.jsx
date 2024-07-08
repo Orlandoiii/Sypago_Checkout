@@ -16,7 +16,7 @@ const backDropAnimation = {
     }
 }
 
-export default function Backdrop({ children, outRef, backGround = "bg-white/60" }) {
+export default function Backdrop({ children, outRef, backGround = "bg-black/30" }) {
 
     logger.log("Renderizo Backdrop");
 

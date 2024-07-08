@@ -28,6 +28,9 @@ class SignalRCom {
 
     notificationSub = null;
 
+    onReconnectionSub = null;
+
+    onCloseSub = null;
 
 
     constructor() {
@@ -50,7 +53,9 @@ class SignalRCom {
 
         let errList = [];
 
-        while (retry < 8) {
+        let sucess = false;
+
+        while (retry < 8 && !sucess) {
 
 
             await Wait(retry * 1500);
@@ -101,24 +106,50 @@ class SignalRCom {
 
                 if (!result) {
                     errList.push(new Error("no se pudo realizar ping contra el servidor"));
-
+                    continue;
                 }
 
-                this.connection.on("NotifyExternalApi", (result, hash) => {
-                    logger.log("Llego Notificacion", result, hash);
-                    if (this.notificationSub)
-                        this.notificationSub(result, hash);
-                });
-
-                return "connection succesful"
+                sucess = true
 
             } catch (err) {
                 logger.error("error establexiendo conexion signalR", err);
                 errList.push(err);
+                sucess = false;
             }
+
         }
 
-        throw new Error("se agotaron los reintentos de conexion");
+        if (!sucess) {
+            throw new Error("se agotaron los reintentos de conexion");
+        }
+
+        this.connection.onreconnecting(error => {
+            logger.error("Reconectando...", error)
+            if (this.onReconnectionSub)
+                this.onReconnectionSub(error);
+        });
+
+        this.connection.onreconnected(connectionId => {
+            logger.info("Reconectado:", connectionId)
+            if (this.onReconnectedSub)
+                this.onReconnectedSub()
+        });
+
+        this.connection.onclose(error => {
+            logger.error("Cerrada la conexion", error);
+            if (this.onCloseSub)
+                this.onCloseSub()
+        })
+
+        this.connection.on("NotifyExternalApi", (result, hash) => {
+            logger.log("Llego Notificacion", result, hash);
+            if (this.notificationSub)
+                this.notificationSub(result, hash);
+        });
+
+        return "Conexion Ejecutada exitosamente";
+
+
     }
 
     async GetTransaction(transactionId, isBlueprintOperation = false) {
@@ -164,7 +195,7 @@ class SignalRCom {
         }
     }
 
-    async RequestOtp(transactionId, payAmt, receptUser, receptDocumentType) {
+    async RequestOtp(transactionId, payAmt, receptUser, receptDocumentType, isBlueprintOperation = false) {
         try {
 
             const currentTime = Date.now();
@@ -177,7 +208,13 @@ class SignalRCom {
             this.requestAlredyInit.alredyAsk = true;
             this.requestAlredyInit.lastRequest = Date.now();
 
-            let result = await this.connection.invoke("RequestOtp", transactionId, payAmt, receptUser, receptDocumentType);
+
+            let methodName = "RequestOtp";
+
+            if (isBlueprintOperation)
+                methodName = "RequestOtpBlueprint"
+
+            let result = await this.connection.invoke(methodName, transactionId, payAmt, receptUser, receptDocumentType);
 
             return result;
         } catch (err) {

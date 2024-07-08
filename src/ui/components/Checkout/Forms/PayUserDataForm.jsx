@@ -239,9 +239,9 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
 
 
                 <div className="flex justify-end">
-                    <a className='block text-white font-medium  bg-slate-500 
-                    rounded-full px-4 py-2 text-sm text-center shadow-md cursor-pointer transition-all ease-in-out 
-                    hover:bg-primary hover:scale-105 '>Entrar y pagar</a>
+                    <a className='block text-primary 
+                     px-4 py-2  text-center  cursor-pointer transition-all ease-in-out 
+                    hover:scale-110 hover:text-secundary '>Entrar y pagar con SyPago</a>
                 </div>
 
 

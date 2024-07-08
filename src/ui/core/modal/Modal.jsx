@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function CloseXSimbol({ onClose }) {
     return (
-        <button className='w-6 bg-slate-100 rounded-full p-[0.28rem] 
-        absolute top-1 right-1.5 shadow-md swadow-slate-500 z-10' onClick={(e) => {
+        <button className='w-9 bg-slate-100 rounded-full p-1.5 
+        absolute top-1.5 right-2 shadow-lg swadow-slate-500 z-10' onClick={(e) => {
                 e.stopPropagation();
                 if (onClose) onClose(e);
             }}>
@@ -46,7 +46,7 @@ function Modal({ children, open, showX, onClose }) {
                     }}
                     transition={{ ease: "easeInOut" }}
                     className="relative  w-[375px] md:w-full md:max-w-[450px]  
-                    min-h-[320px] rounded-xl bg-white shadow-lg shadow-gray-400">
+                    min-h-[320px] rounded-xl bg-[whitesmoke] shadow-lg shadow-gray-400">
                     {showX && <CloseXSimbol onClose={onClose} />}
                     <div className={`w-full`}>
                         {children}

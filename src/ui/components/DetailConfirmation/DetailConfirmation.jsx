@@ -6,8 +6,8 @@ import StepButton from '../../core/buttons/StepButton';
 
 function DetailTitle({ open, onClick, title }) {
     return (
-        <button className="w-full  py-1 px-1   " onClick={onClick}>
-            <h4 className="text-left text-md font-bold text-black ">{title}</h4>
+        <button className="w-full py-1 px-1" onClick={onClick}>
+            <h4 className="text-left text-md font-medium text-black ">{title}</h4>
         </button>
     )
 }
@@ -29,7 +29,7 @@ function DetailField({ title, data, withCopyButton = false }) {
 
 function DetailData({ title, fields }) {
     return (
-        <div className='space-y-1.5 '>
+        <div className='space-y-2 '>
             <DetailTitle title={title} />
             <div className='space-y-2.5 px-1'>
                 {fields.map((v, _) => {
@@ -42,20 +42,25 @@ function DetailData({ title, fields }) {
 
 
 
-function DetailConfirmation({ open, onClose, data, onConfirm, onBack }) {
+function DetailConfirmation({ open, data, onConfirm, onBack }) {
     return (
-        <Modal open={open} showX={false} onClose={onClose}>
+        <Modal open={open} showX={true} onClose={onBack}>
             <h2 className='w-full   absolute left-1/2 transform -translate-x-1/2 top-0 py-2   text-xl 
-           text-black font-medium   text-center'>Datos de la Operacion</h2>
+           text-black font-medium   text-center'>Confirmar Datos</h2>
             <div className='w-full h-full mt-12 mb-2'>
-                <div className='w-full px-3 space-y-3 border-y-2 border-slate-200 py-2.5'>
+                <div className='w-full px-6 space-y-4  py-2.5'>
                     {data && data.map((v, _) => {
                         return <DetailData key={v.section_name} title={v.section_name} fields={v.section_data} />
                     })}
                 </div>
-                <div className='flex w-full justify-between  p-4'>
-                    <StepButton nextButton={false} onClick={onBack}>Regresar</StepButton>
-                    <StepButton nextButton={true} onClick={onConfirm}>Siguiente</StepButton>
+                <div className='flex w-full justify-center  p-4'>
+
+                    <button
+                        type="button"
+                        className="text-center p-2 bg-[#0065BB]  text-[whitesmoke] mb-[20px]  
+                text-sm rounded-2xl  uppercase w-[100px] h-[40px] font-light "
+                        onClick={onConfirm}
+                    >Ok</button>
                 </div>
             </div>
         </Modal>

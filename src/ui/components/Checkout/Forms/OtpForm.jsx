@@ -1,4 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
+import { SignalRService } from "../../../../logic/SignalRCom/SignalRCom";
+import logger from "../../../../logic/Logger/logger";
 // import { InputHelpersFunctions, ValidateKey } from "../core/inputs/ShareLogic"
 
 
@@ -149,10 +151,41 @@ function OtpInputs({ totalInputs, onChageOtpEvent }) {
     )
 }
 
+const requestOtp = async function (transactionId, isBlueprint, transaction) {
+
+    if (!transaction)
+        throw new Error("valores nulos");
+
+    let payAmt = transaction.pay_amt;
+
+    let typeOfDoc = transaction.doc_prefix;
+
+    let acctType = transaction.acct_type == "CELE" ? 1 : 0;
+
+    let receptUser = {
+        Id: transaction.doc_number,
+        Account: {
+            BankCode: transaction.bank_code,
+            Id: transaction.acct_number,
+            Tp: acctType,
+        }
+    }
+
+    let result = await SignalRService.RequestOtp(transactionId, payAmt, receptUser, typeOfDoc, isBlueprint);
+
+    if (!result || !result.isSuccessful) {
+        if (result.err) {
+            logger.error(result.err)
+        }
+        throw new Error("fallo request otp");
+    }
+    return result;
 
 
+}
 
-function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, transactionData = null, signalRClient = null }) {
+
+function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, transactionId, transactionData = null }) {
 
     const [otpValue, setOtpValue] = useState('');
 
@@ -189,26 +222,32 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, transactionData = null, 
 
 
 
-    // useEffect(() => {
+    useEffect(() => {
 
-    //     RequestOtp(transactionData, signalRClient).then((result) => {
-    //         console.log(result);
-    //     }).catch((err => { console.log(err) }))
-
-
-    //     startTimer();
-
-    //     return () => {
-    //         resetOtpForm();
-    //     };
+        requestOtp(transactionId, isBlueprint, transactionData)
+            .then((result) => {
+                logger.log(result);
+            })
+            .catch((err => {
+                logger.error(err)
+            }))
 
 
-    // }, [])
+        startTimer();
+
+        return () => {
+            resetOtpForm();
+        };
+
+
+    }, [])
+
+    logger.log("Renderizando OTP Form:", isBlueprint, transactionId, transactionData)
 
     return (
-       
-       
-       <div className="flex flex-col [&>*]:mb-2 py-8 px-4">
+
+
+        <div className="flex flex-col [&>*]:mb-2 py-8 px-4">
 
             <div className="h-14 w-14 mx-auto">
                 <svg className="w-full" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
@@ -229,8 +268,8 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, transactionData = null, 
             </div>
 
             <div className="px-3 py-2">
-                <h3 className="text-md text-slate-600 text-center">Ingrese el código de verificación
-                    <br /> enviado a su cuenta de <br />correo electrónico o buzón de mensaje.
+                <h3 className="text-md text-slate-600 text-center">Ingrese la clave de pago
+                    <br /> enviada a su cuenta de <br />correo electrónico o buzón de mensaje.
                 </h3>
             </div>
 
@@ -243,20 +282,26 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, transactionData = null, 
               ${isValidOtp() ? "bg-[#0065BB]" : "bg-gray-500"}`} disabled={!isValidOtp()}
                 onClick={(e) => {
                     if (onSubmitOtpEvent)
-                        onSubmitOtpEvent(e, otpValue);
+                        onSubmitOtpEvent(otpValue);
                 }}
             >
                 Confirmar
             </button>
             {secondsRemaining < 0 ?
                 <a className="text-secundary cursor-pointer text-center text-md underline-offset-4 font-normal mt-2" aria-disabled=""
-                    onClick={(e) => {
-                       
+                    onClick={() => {
+                        requestOtp(transactionId, isBlueprint, transactionData)
+                            .then((result) => {
+                                logger.log(result);
+                            })
+                            .catch((err => {
+                                logger.error(err)
+                            }))
                         resetOtpForm();
                         startTimer();
-
                     }}>Solicitar token nuevamente</a>
-                : <p className="text-gray-500 cursor-pointer text-center text-md underline-offset-4 font-normal mt-2">Espere antes de solicitar {secondsRemaining} seg</p>}
+                : <p className="text-gray-500 cursor-pointer text-center 
+                text-md underline-offset-4 font-normal mt-2">Espere antes de solicitar {secondsRemaining} seg</p>}
 
         </div>
     )

@@ -83,7 +83,7 @@ export default function DraggableBox({ children, open, onClose, topStickyChild, 
                         dragElastic={{ top: 0, bottom: 1 }}
                         style={{ y }}
                         onClick={(e) => e.stopPropagation()}
-                        className="absolute bottom-0 w-full h-[60vh] bg-[#1C2434]  
+                        className="absolute bottom-0 w-full h-[60vh] bg-[whitesmoke]  
                      rounded-t-3xl  overflow-hidden">
 
                         <button
@@ -93,7 +93,7 @@ export default function DraggableBox({ children, open, onClose, topStickyChild, 
                             onPointerDown={(e) => {
                                 controls.start(e);
                             }}>
-                            <div className="h-[5px] w-[60px] bg-slate-700 rounded-full 
+                            <div className="h-[5px] w-[60px] bg-slate-300 rounded-full 
                         group-active/drag:bg-slate-400 group-hover/drag:bg-slate-400 duration-200"></div>
                         </button>
 

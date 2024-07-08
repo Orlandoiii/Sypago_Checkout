@@ -135,12 +135,10 @@ export function OptionsContainer({
     )
 }
 
-
-
 export function OptionsSearchButton({ value, onChange }) {
     return (
-        <div className="bg-[#1C2434] px-5">
-            <div className=" bg-gray-800 px-2 py-1 w-full h-11 rounded-lg text-[whitesmoke] flex items-center">
+        <div className="bg-[whitesmoke] px-5">
+            <div className=" bg-slate-200 px-2 py-1 w-full h-11 rounded-lg text-black flex items-center">
                 <GlassIcon />
                 <input className="w-full h-full px-2 bg-transparent outline-none"
                     value={value}
@@ -150,7 +148,6 @@ export function OptionsSearchButton({ value, onChange }) {
         </div>
     )
 }
-
 
 export function OptionsMobile({ options, value, searchValue, onSelected }) {
 
@@ -170,7 +167,7 @@ export function OptionsMobile({ options, value, searchValue, onSelected }) {
                 <button key={i}
                     type="button"
                     className="px-2 py-4 w-full  flex justify-between items-center cursor-pointer
-            text-[whitesmoke]  text-sm "
+            text-black font-medium  text-sm "
                     onClick={(e) => {
 
                         const text = o.toString();
@@ -187,7 +184,7 @@ export function OptionsMobile({ options, value, searchValue, onSelected }) {
                 <div
                     key={"not-found"}
                     className="px-2 py-4 w-full  flex justify-between items-center cursor-pointer
-             text-[whitesmoke]  text-sm  "
+             text-black font-medium  text-sm  "
                     onClick={(e) => {
 
                         // if (onChange) {
