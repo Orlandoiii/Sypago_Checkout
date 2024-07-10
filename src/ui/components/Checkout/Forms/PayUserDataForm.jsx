@@ -1,15 +1,50 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import SelectWithSearch from '../../../core/select/SelectWithSearch';
 import ChipSelector from '../../../core/chip_selector/ChipSelector';
-import InputBox from '../../../core/input/InputBox';
+import InputBox, { FormatAsFloat, ParseToFloat } from '../../../core/input/InputBox';
 import Select from '../../../core/select/Select';
 import logger from '../../../../logic/Logger/logger';
+import { useConfig } from '../../../contexts/ConfigContext';
 
-const requiredRule = {
+
+
+
+function GetDigitValue(digits) {
+    const Pesos = [3, 2, 7, 6, 5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+
+    let loopCount = 0;
+    let result = 0;
+
+    for (let i = 0; i < digits.length; i++) {
+        result += parseInt(digits[i]) * Pesos[loopCount];
+        loopCount++;
+    }
+
+    result = 11 - (result % 11);
+    return result >= 10 ? (result === 10 ? 0 : 1) : result;
+}
+
+function IsValidAccount(value) {
+    if (value.length !== 20) return false;
+
+    const BankCode = value.substring(0, 4);
+    const Ofice = value.substring(4, 8);
+    const ControlDigit = value.substring(8, 10);
+    const Account = value.substring(10, 20);
+
+    const firstDigit = GetDigitValue(BankCode + Ofice);
+    const secondDigit = GetDigitValue(Ofice + Account);
+
+    const isValid = parseInt(ControlDigit) === firstDigit * 10 + secondDigit;
+
+    return isValid;
+}
+
+const amountValidatorRule = {
     required: {
         value: true,
-        message: "El campo es requerido",
+        message: "El Monto es requerido",
     }
     // minLength: {
     //   value: 20,
@@ -21,6 +56,70 @@ const requiredRule = {
     // }
 }
 
+
+const phoneValidatorRule = {
+    required: {
+        value: true,
+        message: "El Teléfono es requerido",
+    },
+    minLength: {
+        value: 10,
+        message: "El Teléfono debe tener minimo 10 numeros"
+    },
+    maxLength: {
+        value: 11,
+        message: "El Teléfono debe tener maximo 11 numeros"
+    },
+    pattern: {
+        value: /^(?:(?:0)?414|(?:0)?424|(?:0)?412|(?:0)?416|(?:0)?426)\d{7}$/,
+        message: "Formato ejem:414/04141112233"
+    }
+}
+
+const acctValidatorRule = {
+    required: {
+        value: true,
+        message: "La Cuenta es requerida",
+    },
+    minLength: {
+        value: 20,
+        message: "La Cuenta debe tener minimo 20 numeros"
+    },
+    maxLength: {
+        value: 20,
+        message: "La Cuenta debe tener maximo 20 numeros"
+    }
+    // validate: {
+    //     value: (v) => IsValidAccount(v),
+    //     message: "La Cuenta no es valida"
+    // }
+}
+
+
+const docValidatorRule = {
+    required: {
+        value: true,
+        message: "El Nro de documento es requerido",
+    },
+    minLength: {
+        value: 3,
+        message: "El Nro de documento minimo 3 caracteres"
+    },
+    maxLength: {
+        value: 16,
+        message: "El Nro de documento maximo 16 caracteres"
+    }
+    // validate: {
+    //     value: (v) => IsValidAccount(v),
+    //     message: "La Cuenta no es valida"
+    // }
+}
+
+
+
+const regexPatternForNumbers = /^\d$/;
+
+
 const docsPrefix = [
     "V",
     "J",
@@ -30,9 +129,6 @@ const docsPrefix = [
     "R",
     "C"
 ]
-
-
-
 const acctTypeDict = {
     "Teléfono": "CELE",
     "Cuenta": "CNTA"
@@ -45,10 +141,36 @@ const acctTypeDictReverse = {
 
 
 
+function validateAmount(amt, amtObject) {
 
-function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
+    if (amtObject.type == "NONE")
+        return "";
 
-    const { register, handleSubmit, formState, setValue, watch } = useForm({
+    if (amt <= 0) {
+        return "El monto pagado debe ser mayor a cero";
+    }
+
+    if (amtObject.type == "ALMP") {
+        return "";
+    }
+
+    if (amtObject.type == "ALMM" && amt < amtObject.min_allow_amt) {
+        return `Monto minimo permitido ${FormatAsFloat(amtObject.min_allow_amt)}`
+    }
+
+    if (amtObject.type == "ALMX") {
+        return `Monto maximo permitido ${FormatAsFloat(amtObject.max_allow_amt)}`
+    }
+
+    return "";
+}
+
+
+
+
+function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transactionId, isBlueprint }) {
+
+    const { register, handleSubmit, formState, setValue, watch, setError } = useForm({
         mode: "onChange",
     });
 
@@ -79,7 +201,12 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
 
     const docValue = receivingUser?.document_info?.number
 
-    const amtValue = amount?.amt.toString();
+
+    const [amt, setAmt] = useState(FormatAsFloat(amount.amt));
+
+    const [amtErrMessage, setAmtErrMessage] = useState("");
+
+
 
 
     const [phoneAccountSelector, setPhoneAccountSelector] = useState(accountPrefix &&
@@ -102,13 +229,24 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
     const [bankErr, setBankErr] = useState(false);
 
 
+    const { config } = useConfig();
+
+    const loginAndPayUrl = config.sypago_callback_url + "/paycheckout/" + (isBlueprint ?
+        "blueprint/" : "transaction/") + transactionId;
 
 
-    logger.log("PayForm", bank, bankCodeData, bankCodeName, amtValue, docLetter);
+    logger.log("PayForm", bank, bankCodeData, bankCodeName, amt, docLetter);
 
 
 
+    logger.log("")
 
+
+
+    useEffect(() => {
+        const convertAmt = ParseToFloat(amt);
+        setAmtErrMessage(validateAmount(convertAmt, amount));
+    }, [amt])
 
     return (
         <form className="bg-transparent px-1.5 w-full h-auto max-w-[360px] space-y-[1.2rem] mx-auto md:max-w-[440px] "
@@ -116,17 +254,51 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
             onSubmit={
                 handleSubmit((data) => {
 
+
                     if (bankErr)
                         return;
 
+                    const bankCode = referenceBankListReverse.current.get(bank);
+
+                    const acctType = acctTypeDict[phoneAccountSelector];
+
+                    if (acctType == "CNTA") {
+                        if (data.acct.substring(0, 4) !== bankCode) {
+                            setError("acct",
+                                {
+                                    type: "acct_wrong_account",
+                                    message: "La Cuenta debe iniciar con el codigo de Banco"
+                                })
+                            return;
+                        }
+                        if (!IsValidAccount(data.acct)) {
+                            setError("acct",
+                                {
+                                    type: "acct_wrong_account",
+                                    message: "La Cuenta no es valida digito de control"
+                                })
+                            return;
+                        }
+                    }
+
+
+
                     logger.log("Submit de Pago", data);
+
+                    const convertAmt = ParseToFloat(amt);
+
+                    if (amount.type != "NONE" && amtErrMessage.length > 0)
+                        return;
+
+
                     const newData = {
                         ...data,
                         doc_prefix: docPrefix,
-                        bank_code: referenceBankListReverse.current.get(bank),
+                        bank_code: bankCode,
                         bank_name: bank,
-                        acct_type: acctTypeDict[phoneAccountSelector],
+                        acct_type: acctType,
                         acct_name: phoneAccountSelector,
+                        amt: convertAmt
 
                     }
                     logger.log("DATA RECEPTORA EN SUBMIT:", newData);
@@ -169,8 +341,11 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
                 register={register}
                 errMessage={errors.phone?.message}
                 useStrongErrColor={isSubmitted}
-                validationRules={requiredRule}
+                validationRules={phoneValidatorRule}
                 watch={watch}
+                inputMode='tel'
+                characterValidationPattern={regexPatternForNumbers}
+
 
             />}
 
@@ -182,8 +357,11 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
                 register={register}
                 errMessage={errors.acct?.message}
                 useStrongErrColor={isSubmitted}
-                validationRules={requiredRule}
+                validationRules={acctValidatorRule}
                 watch={watch}
+                inputMode='numeric'
+                characterValidationPattern={regexPatternForNumbers}
+
 
             />}
 
@@ -211,8 +389,11 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
                     register={register}
                     errMessage={errors.doc_number?.message}
                     useStrongErrColor={isSubmitted}
-                    validationRules={requiredRule}
+                    validationRules={docValidatorRule}
                     watch={watch}
+                    inputMode='numeric'
+                    characterValidationPattern={regexPatternForNumbers}
+
 
 
                 />
@@ -222,14 +403,17 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
             {amount?.type !== "NONE" &&
                 <InputBox
                     label={"Monto"}
-                    value={amtValue}
+                    value={amt}
                     useDotLabel={false}
                     inputName={"amt"}
-                    register={register}
-                    errMessage={errors.amt?.message}
+                    controlled={true}
+                    errMessage={amtErrMessage}
                     useStrongErrColor={isSubmitted}
-                    validationRules={requiredRule}
-                    watch={watch}
+                    onChangeEvent={(e) => {
+                        setAmt(FormatAsFloat(ParseToFloat(e.target.value)))
+                    }}
+                    inputMode='decimal'
+
                 />}
 
             <div className='mx-auto px-4 md:px-8 space-y-2 w-full'>
@@ -241,7 +425,7 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit }) {
                 <div className="flex justify-end">
                     <a className='block text-primary 
                      px-4 py-2  text-center  cursor-pointer transition-all ease-in-out 
-                    hover:scale-110 hover:text-secundary '>Entrar y pagar con SyPago</a>
+                    hover:scale-110 hover:text-secundary ' href={loginAndPayUrl}>Entrar y pagar con SyPago</a>
                 </div>
 
 

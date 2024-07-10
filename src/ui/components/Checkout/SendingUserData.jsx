@@ -35,14 +35,14 @@ function SendingUserData(
         <div className="relative  h-full w-full flex flex-col justify-center items-center bg-transparent 
         text-[whitesmoke] p-4  ">
 
-            {backUrl && isValidURL(backUrl) && <button
+            {backUrl && isValidURL(backUrl) && <a
                 className="absolute top-8 left-6  bg-white rounded-xl flex justify-center 
                 items-center self-start p-1 md:top-[3.5rem] md:left-[3rem] md:p-3 md:px-4"
-
+                href={backUrl}
             >
                 <img src={imagePath} alt="back_arrow" className="w-[30px] h-[30px]"></img>
                 <p className="text-[#0B416E] text-md font-semibold hidden md:block">Regresar</p>
-            </button>}
+            </a>}
 
             <div className='flex flex-col justify-between items-center  
             p-4 [&>*]:my-[0.65rem]  md:[&>*]:my-[1.4rem]'>
@@ -68,7 +68,8 @@ function SendingUserData(
                 </div>
 
 
-                <div className="flex flex-col items-center justify-center  bg-white text-[#0B416E] w-[265px] h-[85px] px-5  rounded-[30px] md:w-[330px] md:h-[100px]">
+                <div className="flex flex-col items-center justify-center  bg-white text-[#0B416E] 
+                w-[265px] h-[85px] px-5  rounded-[30px] md:w-[330px] md:h-[100px]">
                     <h2 className="text-lg md:text-xl">Total a Pagar</h2>
                     <p className="text-xl font-semibold md:text-2xl">{monto}</p>
                 </div>

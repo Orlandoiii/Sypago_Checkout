@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import logger from "../../../logic/Logger/logger";
-import { ValidateCharacterOnKeyDown } from "../../../logic/InputsCommonLogic/Patterns";
 
 
 const emptyRegister = {
@@ -9,19 +8,122 @@ const emptyRegister = {
     name: "",
     ref: null,
 }
+function RemoveCharsOutOfRegex(value, regex) {
+    if (regex.source === '.') return value;
+
+    const regexCondition = `[^${regex.source.replaceAll('[', '').replaceAll(']', '').replaceAll('|', '')}]`;
+    const negatedRegex = new RegExp(regexCondition, "g");
+    return value.replace(negatedRegex, '');
+}
+
+export function FormatAsFloat(value) {
 
 
-// const floatLabeStyles = `h-full absolute left-1.5 top-0 flex items-center select-none px-3.5 
-// transition-all ease-in-out duration-200  text-gray-600 bg-transparent origin-left text-md`
+    if (value != null && value !== '') {
 
-// const normalLabelStyles = "`block text-md pl-0.5 font-medium"
 
+        let numString = value;
+
+        if (typeof value === "string") {
+            numString = parseFloat(value.replaceAll(".", "").replaceAll(",", "."));
+        }
+
+        let number = new Intl.NumberFormat('es-VE').format(
+            numString
+        )
+
+
+        const hasCommaQuestion = number.indexOf(",") !== -1;
+
+        if (!hasCommaQuestion) number = `${number},00`;
+
+        if (number.split(",")[1].length < 2)
+            number = number + "0";
+
+
+        return number;
+    }
+
+    return '0,00'
+
+
+}
+
+export function ParseToFloat(value) {
+
+    if (!value)
+        return 0;
+
+    const commas = value.split(',').length;
+    const dots = value.split('.').length;
+
+    if (commas > 1 && dots > 1) {
+        if (value.lastIndexOf(',') > value.lastIndexOf('.'))
+            value = value.replaceAll('.', '');
+        else value = value.replaceAll(',', '');
+
+    } else if (commas > 2)
+        value = value.replaceAll(',', '');
+
+    else if (dots > 2)
+        value = value.replaceAll('.', '');
+
+    value = value.replaceAll(',', '.');
+
+
+    if (value.split('.').length > 1) {
+
+        if (value.split('.')[1].length > 2) {
+
+
+            return parseFloat(value) * 10;
+        }
+
+        else if (value.split('.')[1].length < 2) {
+
+            return parseFloat(value) / 10;
+        }
+
+
+        return parseFloat(value);
+    }
+
+    return parseFloat(value) / 100;
+}
+
+
+function isValidInputCharacter(key, regexPattern) {
+    // Allow functional keys
+    const functionalKeys = [
+        "Backspace",
+        "Delete",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+        "Home",
+        "End",
+        "Tab"
+
+    ];
+
+    if (functionalKeys.includes(key.code)) {
+        return true;
+    }
+
+    if (key.keyCode === 13 || key.keyCode === 46 || key.keyCode === 8) {
+        return true;
+    }
+
+    const regex = new RegExp(regexPattern);
+    return regex.test(key.key); // Return true if matches regex, false otherwise
+}
 
 function Label({ inputName, label, useDotLabel, isFocus, value }) {
     return (
         <label className={`h-full absolute left-[0.360rem] top-0 flex items-center select-none px-3 
              transition-all ease-in-out duration-300 font-medium   bg-transparent origin-left text-md
-        ${isFocus || (value && value.length > 0) ?
+        ${isFocus || (value && value?.toString().length > 0) ?
                 "text-slate-600 scale-75   -translate-y-3" : "text-slate-700   scale-100  translate-y-0 "}`}
             htmlFor={inputName}>
             {`${useDotLabel ? label + ":" : label}`}
@@ -36,6 +138,7 @@ export default function InputBox({
     useDotLabel = false,
     value,
     type = "text",
+    customType = "",
     inputMode = "text",
     readOnly = false,
 
@@ -56,7 +159,7 @@ export default function InputBox({
     turnOffAutoCompleted = false,
 
     icons = null,
-    characterValidationPattern = null
+    characterValidationPattern = null,
 
 }) {
 
@@ -67,8 +170,10 @@ export default function InputBox({
     if (!inputName)
         inputName = label;
 
-    const [isFocus, setIsFocus] = useState(false);
 
+
+
+    const [isFocus, setIsFocus] = useState(false);
 
     const { onChange, onBlur, ref } = register != null && !controlled ?
         register(inputName, validationRules ?? {}) : emptyRegister;
@@ -76,12 +181,12 @@ export default function InputBox({
 
     const defaultValue = value;
 
-    let isWachtWithDefault = false
+    // let isWachtWithDefault = false
 
     if (watch && !controlled) {
 
         value = watch(inputName);
-        isWachtWithDefault = true;
+        // isWachtWithDefault = true;
     }
 
     function handleOnChange(e) {
@@ -120,10 +225,15 @@ export default function InputBox({
 
     function handleKeyDown(e) {
 
-        if (characterValidationPattern) {
-            if (!ValidateCharacterOnKeyDown(e, characterValidationPattern))
+        if (characterValidationPattern && characterValidationPattern != "") {
+
+            if (!isValidInputCharacter(e, characterValidationPattern)) {
+                e.preventDefault();
                 return;
+            }
         }
+
+
 
         if (onKeyDown)
             onKeyDown(e);
@@ -153,6 +263,7 @@ export default function InputBox({
                             ref(e);
                         if (inputRef)
                             inputRef.current = e;
+
                     }}
 
                     id={inputName}

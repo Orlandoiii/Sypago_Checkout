@@ -14,7 +14,7 @@ import OtpForm from "./Forms/OtpForm";
 import Modal from "../../core/modal/Modal";
 import NotificationModal from "../../core/notifications/NotificationModal";
 import AcceptError from "../../../logic/models/AcceptError";
-import { useNavigate } from "react-router-dom";
+import { FormatAsFloat } from "../../core/input/InputBox";
 
 
 
@@ -119,13 +119,11 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
     const sypagoUrl = config.sypago_url + "/CheckoutHub";
 
-    const navigate = useNavigate();
 
 
     const linkRef = useRef(null);
 
 
-    const [callBackUrl, setCallBackUrl] = useState("");
 
     logger.info("Transaction State Renderizo Checkout Componenet", transactionState, config);
 
@@ -340,7 +338,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             payload: {
                 status: transactionStatus,
                 hash: hash,
-                originalMessageStatus: transactionStatusJson
+                original: transactionStatusJson
             }
         })
 
@@ -362,14 +360,19 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             referenciaIBp = transactionStatus.EndToEndId.slice(-8);
         }
 
+
+
+        const rsn = !isACCP ? transactionState.rjctCodes[transactionStatus.Rsn] : "";
+
+
+
         const data = {
             refBanco: referenciaIBp,
             refSypago: transactionStatus.TransactionId,
             montoCobrado: transactionStatus.Amount,
             montoPagado: transactionStatus.PayAmount,
             codigo: transactionStatus.Rsn,
-            razon: !isACCP ?
-                transactionState.rjctCodes.find(v => v.code == transactionStatus.Rsn).description : "",
+            razon: rsn,
             operationResult: txSts,
             typeOfNotification: typeOfNotification
 
@@ -406,11 +409,61 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
 
     useEffect(() => {
-        if (transactionState.isError) {
-            setOpenLoadModal(false);
-            openAlertNotification("error", transactionState.error);
+
+        if (!transactionState.isError)
+            return;
+
+        if (transactionState.errorCode == "NOTPEND") {
+
+            if (!dataIsLoaded) {
+                return;
+            }
+
+
+            const transaction = transactionState.transactionData;
+
+            let referenciaIBp = "";
+
+            if (transaction.end_to_end && transaction.end_to_end > 8) {
+                referenciaIBp = transaction.end_to_end.slice(-8);
+            }
+
+            let isACCP = transaction.status == "ACCP";
+
+
+
+            let typeOfNotification = "SUCCESS"
+
+            if (!isACCP) {
+                typeOfNotification = "ERROR";
+            }
+
+            const rsn = !isACCP ? transactionState.rjctCodes[transaction.rsn] : "";
+
+            const data = {
+                refBanco: referenciaIBp,
+                refSypago: transaction.transaction_id,
+                montoCobrado: transaction.amount.amt,
+                montoPagado: transaction.amount.pay_amt,
+                codigo: transaction.rsn,
+                razon: rsn,
+                operationResult: transaction.status,
+                typeOfNotification: typeOfNotification
+
+            }
+
+            dispatchNotification({ type: "notification/open", payload: { ...data } })
+            SignalRService.Stop();
+            return;
+
+
         }
-    }, [transactionState.isError])
+
+
+        setOpenLoadModal(false);
+        openAlertNotification("error", transactionState.error);
+
+    }, [transactionState.isError, dataIsLoaded])
 
 
 
@@ -431,27 +484,63 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                             if (!b.isSuccessful) {
                                 logger.error(b.err);
-                                return;
+                                throw new Error(b);
                             }
 
                             dispatch({ type: "transaction/setbanks", payload: { banks: b.value } })
                         }).catch(err => {
 
+                            dispatch({
+                                type: "transaction/seterror",
+                                payload: {
+                                    error: "No se pudo obetener los codigos de Banco",
+                                    errorCode: err.message,
+                                    transactionData: {},
+                                    transactionDataIsLoaded: false,
+                                }
+                            })
                         })
                     SignalRService.GetTransaction(transactionId, isBlueprint)
                         .then((t) => {
                             logger.info("RESULT Transaction", t);
 
                             if (!t.isSuccessful) {
-                                logger.error(t.err);
-                                return;
+
+                                logger.error(t.err)
+
+                                if (t.err == "NOTPEND") {
+
+                                    logger.error("La operacion ya no esta pendiente:", t.value);
+
+                                    dispatch({
+                                        type: "transaction/seterror",
+                                        payload: {
+                                            error: t.err,
+                                            errorCode: "NOTPEND",
+                                            transactionData: t.value,
+                                            transactionDataIsLoaded: true,
+                                        }
+                                    })
+                                    return;
+                                }
+
+                                throw new Error(t.err);
+
                             }
 
-
-
                             dispatch({ type: "transaction/setdata", payload: { transactionData: t.value } })
+
                         }).catch(err => {
 
+                            dispatch({
+                                type: "transaction/seterror",
+                                payload: {
+                                    error: "No se pudo obetener la transaccion",
+                                    errorCode: err.message,
+                                    transactionData: {},
+                                    transactionDataIsLoaded: false,
+                                }
+                            })
                         })
 
 
@@ -461,29 +550,48 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                             if (!c.isSuccessful) {
                                 logger.error(c.err);
-                                return;
+                                throw new Error(c.err);
                             }
 
                             dispatch({ type: "transaction/setcodes", payload: { codes: c.value } })
+
                         }).catch(err => {
 
+                            dispatch({
+                                type: "transaction/seterror",
+                                payload: {
+                                    error: "No se pudo obtener codigos de rechazo",
+                                    errorCode: err.message,
+                                    transactionData: {},
+                                    transactionDataIsLoaded: false,
+                                }
+                            })
                         })
-                }).catch(err => {
-                    logger.error(err);
-                    openAlertNotification("error", "ERROR")
 
+                }).catch(err => {
+
+                    logger.error(err);
+
+                    dispatch({
+                        type: "transaction/seterror",
+                        payload: {
+                            error: "No se pudo conectar con signalr",
+                            errorCode: err.message,
+                            transactionData: {},
+                            transactionDataIsLoaded: false,
+                        }
+                    })
                 })
-        } else {
-            setLoadModalMessage("")
-            setOpenLoadModal(false);
+
+            return;
         }
 
+
+        setLoadModalMessage("")
+        setOpenLoadModal(false);
+
+
         if (dataIsLoaded) {
-
-
-
-
-
             SignalRService.notificationSub = onNotify;
             SignalRService.onReconnectedSub = onReconnected;
             return () => { SignalRService?.Stop() };
@@ -503,28 +611,34 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                 <main className='relative bg-[#0B416E] flex flex-col  md:flex-row w-full h-full max-h-[1080px] max-w-[1920px] overflow-x-hidden '>
 
-                    {!transactionState.isLoaded() && <div className="absolute top-1/2 left-1/2 transform 
-                    -translate-x-1/2 -translate-y-1/2
-                    flex justify-center items-center">
-                        <div className="w-[350px] md:w-[560px] h-auto block">
+
+                    <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 
+                    transition-all ease-in-out duration-500 
+                     ${!transactionState.isLoaded() || transactionState.isError ? "opacity-100" : "opacity-0"}
+                     ${transactionState.isError ? "-translate-y-[380%] md:-translate-y-[300%]" : "-translate-y-1/2"}`}>
+                        <div className="w-[350px] md:w-[560px] h-auto">
                             <SypagoLogo negative={true} />
                         </div>
-                    </div>}
+                    </div>
 
-                    <section className='w-full  md:w-[50%] h-full'>
+                    <section className={`w-full  md:w-[50%] h-full`}>
 
 
 
 
                         <div className={`w-full h-full transition-all ease-in-out duration-700
-                            ${transactionState.isLoaded() ? visebleTranslateEffect + " opacity-100" : effectTranslateOne + " opacity-0"}`}>
+                            
+                          
+                            ${transactionState.isLoaded() && !transactionState.isError ?
+                                visebleTranslateEffect + " opacity-100" : effectTranslateOne + " opacity-0"}`}>
 
-                            {transactionState.isLoaded() && <SendingUserData
-                                userName={transactionState.transactionData?.receiving_user?.name}
-                                concept={transactionState.transactionData?.concept}
-                                monto={transactionState.transactionData?.amount?.amt}
-                                backUrl={transactionState.transactionData?.notification_urls?.return_front_end_url}
-                            />}
+                            {transactionState.isLoaded() && !transactionState.isError
+                                && <SendingUserData
+                                    userName={transactionState.transactionData?.receiving_user?.name}
+                                    concept={transactionState.transactionData?.concept}
+                                    monto={FormatAsFloat(transactionState.transactionData?.amount?.amt)}
+                                    backUrl={transactionState.transactionData?.notification_urls?.return_front_end_url}
+                                />}
 
                         </div>
 
@@ -534,21 +648,23 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                     </section>
 
                     <section className={`w-full h-full md:w-[50%] flex 
-                flex-col justify-center items-center  
+                flex-col justify-center items-center   ${transactionState.isError ? "hidden" : "block"}
                 bg-[whitesmoke] py-8 rounded-t-[1.75rem] md:rounded-none md:rounded-l-[3.5rem] transition-all ease-in-out  duration-700 
-                            ${transactionState.isLoaded() ? visebleTranslateEffect + " opacity-100" : effectTranslateTwo + " opacity-100"}`}>
+                            ${transactionState.isLoaded() && !transactionState.isError ? visebleTranslateEffect + " opacity-100" : effectTranslateTwo + " opacity-100"}`}>
 
                         <div className="hidden w-[380px] h-auto mb-8 md:block">
                             <SypagoLogo />
                         </div>
 
                         <div className={`w-full `} >
-                            {transactionState.isLoaded() &&
+                            {transactionState.isLoaded() && !transactionState.isError &&
                                 <PayUserDataForm
                                     banks={transactionState.banks}
                                     receivingUser={transactionState.transactionData?.receiving_user}
                                     amount={transactionState.transactionData?.amount}
                                     onSubmit={onSubmitPayForm}
+                                    isBlueprint={isBlueprint}
+                                    transactionId={transactionId}
 
                                 />}
                         </div>
@@ -557,7 +673,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                 </main>
 
-                <a ref={linkRef} href={callBackUrl}></a>
+                <a className="w-0 h-0 opacity-0" ref={linkRef} href={"/"}></a>
             </div >
 
             <DetailConfirmation
@@ -566,8 +682,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 onBack={() => { setOpenDetail(false) }}
                 onConfirm={onConfirm}
             />
-
-
 
             <Modal
                 open={openOtp}
@@ -596,22 +710,28 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 onClickEvent={() => {
                     dispatchNotification({ type: "notification/close" });
 
-                    if (transactionState.transactionData.type == "RedirectToCheckout") {
+                    let callBack = config.sypago_callback_url;
+
+                    if (transactionState.transactionData.type == "RedirectToCheckout"
+                        && !transactionState.isError) {
 
                         const resultForUrl =
                             `?result=${transactionState.originalMessageStatus}&hash=${transactionState.hash}`
 
-                        let callBackUrl = transactionState.paymentStatus == "ACCP" ?
+                        const url = transactionState.paymentStatus == "ACCP" ?
                             transactionState.transactionData.notification_urls.sucessful_callback_url :
                             transactionState.transactionData.notification_urls.failed_callback_url;
 
-                        callBackUrl = callBackUrl + resultForUrl;
+                        callBack = url + resultForUrl;
 
-                        
 
-                        //navigate(callBackUrl)
-                        return;
                     }
+
+                    linkRef.current.href = callBack;
+                    linkRef.current.click();
+
+                    return;
+
                 }}
 
             />

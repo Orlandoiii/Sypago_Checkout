@@ -15,8 +15,8 @@ export const paymentNumberToName = {
     0: "PEND",
     1: "PROC",
     2: "ACCP",
-    4: "RJCT",
-    5: "CANC"
+    3: "RJCT",
+    4: "CANC"
 
 }
 
@@ -47,6 +47,8 @@ const transactionInitialState = {
     rjctCodes: null,
     rjctCodeLoad: false,
 
+
+    errorCode: "",
     isError: false,
     error: null,
 
@@ -55,7 +57,16 @@ const transactionInitialState = {
     hash: null
 };
 
+function createCodeDescriptionDictionary(data) {
+    const dictionary = {};
 
+    data.forEach(item => {
+        const parsedItem = JSON.parse(item);
+        dictionary[parsedItem.code] = parsedItem.description;
+    });
+
+    return dictionary;
+}
 
 export const transactionReducer = (state, action) => {
 
@@ -97,6 +108,9 @@ export const transactionReducer = (state, action) => {
         }
 
 
+
+
+
         case "transaction/status": {
             return {
                 ...state,
@@ -118,7 +132,7 @@ export const transactionReducer = (state, action) => {
         case "transaction/setcodes": {
             return {
                 ...state,
-                rjctCodes: action.payload.codes,
+                rjctCodes: createCodeDescriptionDictionary(action.payload.codes),
                 rjctCodeLoad: true
             }
         }
@@ -128,6 +142,9 @@ export const transactionReducer = (state, action) => {
                 ...state,
                 error: action.payload.error,
                 isError: true,
+                errorCode: action.payload.errorCode,
+                transactionData: action.payload.transactionData,
+                transactionDataIsLoaded: action.payload.transactionDataIsLoaded
             }
         }
 
