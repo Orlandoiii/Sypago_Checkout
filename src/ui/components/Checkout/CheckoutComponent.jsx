@@ -14,7 +14,7 @@ import OtpForm from "./Forms/OtpForm";
 import Modal from "../../core/modal/Modal";
 import NotificationModal from "../../core/notifications/NotificationModal";
 import AcceptError from "../../../logic/models/AcceptError";
-import { FormatAsFloat } from "../../core/input/InputBox";
+import { FormatAsFloat, ParseToFloat } from "../../core/input/InputBox";
 
 
 
@@ -193,27 +193,31 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         }
 
 
-        if (amount.type != "NONE" && amount.amt != receivingUserData.amt) {
+        const chargeAmout = amount.amt;
+        const payAmt = receivingUserData.amt;
 
-            receptData.pay_amt = parseFloat(receivingUserData.amt);
+
+        if (amount.type != "NONE" && chargeAmout !== payAmt) {
+
+            receptData.pay_amt = payAmt;
             emisorObj.section_data.push(
                 {
                     name: "Monto Cobrado",
-                    data: amount.amt
+                    data: FormatAsFloat(chargeAmout)
                 })
             receptObj.section_data.push({
                 name: "Monto Pagado",
-                data: receivingUserData.amt
+                data: FormatAsFloat(payAmt)
             })
         }
         else {
 
-            receptData.pay_amt = parseFloat(amount.amt);
+            receptData.pay_amt = chargeAmout;
 
             emisorObj.section_data.push(
                 {
                     name: "Monto",
-                    data: amount.amt
+                    data: chargeAmout
                 })
         }
 
@@ -369,8 +373,8 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         const data = {
             refBanco: referenciaIBp,
             refSypago: transactionStatus.TransactionId,
-            montoCobrado: transactionStatus.Amount,
-            montoPagado: transactionStatus.PayAmount,
+            montoCobrado: FormatAsFloat(transactionStatus.Amount),
+            montoPagado: FormatAsFloat(transactionStatus.PayAmount),
             codigo: transactionStatus.Rsn,
             razon: rsn,
             operationResult: txSts,
@@ -443,8 +447,8 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             const data = {
                 refBanco: referenciaIBp,
                 refSypago: transaction.transaction_id,
-                montoCobrado: transaction.amount.amt,
-                montoPagado: transaction.amount.pay_amt,
+                montoCobrado: FormatAsFloat(transaction.amount.amt),
+                montoPagado: FormatAsFloat(transaction.amount.pay_amt),
                 codigo: transaction.rsn,
                 razon: rsn,
                 operationResult: transaction.status,

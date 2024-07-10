@@ -154,11 +154,11 @@ function validateAmount(amt, amtObject) {
         return "";
     }
 
-    if (amtObject.type == "ALMM" && amt < amtObject.min_allow_amt) {
+    if ((amtObject.type == "ALMM" || amtObject.type == "ALMX") && amt < amtObject.min_allow_amt) {
         return `Monto minimo permitido ${FormatAsFloat(amtObject.min_allow_amt)}`
     }
 
-    if (amtObject.type == "ALMX") {
+    if (amtObject.type == "ALMX" && amt > amtObject.max_allow_amt) {
         return `Monto maximo permitido ${FormatAsFloat(amtObject.max_allow_amt)}`
     }
 
