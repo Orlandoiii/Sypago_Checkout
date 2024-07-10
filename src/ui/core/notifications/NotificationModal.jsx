@@ -4,6 +4,7 @@ import NotificationIcon from "../icons/notifications/NotificationIcon";
 import Modal from "../modal/Modal";
 import { useState } from "react";
 import { useEffect } from "react";
+import ConfettiGenerator from "confetti-js";
 
 function Title(operationResult) {
     switch (operationResult) {
@@ -16,7 +17,7 @@ function Title(operationResult) {
         case "RJCT":
             return "Operación Rechazada"
     }
-    throw new Error("estado de la operaciones desconocido");
+    return "PROC"
 }
 
 
@@ -160,58 +161,62 @@ function NotificationModal({
 
     }, [])
     return (
-        <Modal open={open}>
-            <canvas ref={canvasRef} className={`${operationResult == "ACCP" ? "absolute" : "hidden"} z-[0]`}></canvas>
+        <>
+            <Modal open={open}>
 
-            <div className={`flex justify-center items-center w-full z-[1]`}>
+                <canvas ref={canvasRef} className={`${operationResult == "ACCP" ? "fixed top-0 left-0" : "hidden"} -z-10`}></canvas>
 
-                <div className="flex flex-col justify-center items-center">
+                <div className={`flex justify-center items-center w-full z-[1]`}>
 
-                    <div className="mt-[20px] cursor-pointer" onClick={(e) => {
-                        if (operationResult !== "ACCP")
-                            return;
+                    <div className="flex flex-col justify-center items-center">
 
-                        if (confettiActive)
-                            turnOffConfetti();
-                        else
-                            turnOnConfetti();
-                    }}>
-                        <NotificationIcon width="w-[65px]" heigth="h-[65px]" type={typeOfNotification} />
-                    </div>
+                        <div className="mt-[20px] cursor-pointer z-10" onClick={(e) => {
+                            if (operationResult !== "ACCP")
+                                return;
 
-                    <h3 className="font-semibold my-[20px]">{Title(operationResult)}</h3>
+                            if (confettiActive)
+                                turnOffConfetti();
+                            else
+                                turnOnConfetti();
+                        }}>
+                            <NotificationIcon width="w-[65px]" heigth="h-[65px]" type={typeOfNotification} />
+                        </div>
 
-                    <div className="space-y-[0.15rem] mb-[20px]">
+                        <h3 className="font-semibold my-[20px]">{Title(operationResult)}</h3>
 
-                        {refSypago && <RefComponent refTitle="Ref. SyPago:" refValue={refSypago} />}
+                        <div className="space-y-[0.15rem] mb-[20px]">
 
-                        {refBanco && <RefComponent refTitle="Ref. Banco:" refValue={refBanco} />}
+                            {refSypago && <RefComponent refTitle="Ref. SyPago:" refValue={refSypago} />}
 
-                        {operationResult == "ACCP" && montoCobrado &&
-                            <DescribeComponent title={amtsEquals ? "Monto:" : "Monto cobrado:"} value={montoCobrado} />}
+                            {refBanco && <RefComponent refTitle="Ref. Banco:" refValue={refBanco} />}
 
-                        {!amtsEquals && operationResult == "ACCP"
-                            && montoPagado && <DescribeComponent title="Monto pagado:" value={montoPagado} />}
+                            {operationResult == "ACCP" && montoCobrado &&
+                                <DescribeComponent title={amtsEquals ? "Monto:" : "Monto cobrado:"} value={montoCobrado} />}
 
-                        {typeOfNotification == "ERROR" && codigo && <DescribeComponent title="Código:" value={codigo} />}
+                            {!amtsEquals && operationResult == "ACCP"
+                                && montoPagado && <DescribeComponent title="Monto pagado:" value={montoPagado} />}
+
+                            {typeOfNotification == "ERROR" && codigo && <DescribeComponent title="Código:" value={codigo} />}
 
 
-                        {typeOfNotification == "ERROR" && razon && <ErrorDescriptionComponent value={razon} />}
+                            {typeOfNotification == "ERROR" && razon && <ErrorDescriptionComponent value={razon} />}
 
-                    </div>
+                        </div>
 
-                    <button
-                        type="button"
-                        className="text-center p-2 bg-[#0065BB]  text-[whitesmoke] mb-[20px]  
+                        <button
+                            type="button"
+                            className="text-center p-2 bg-[#0065BB]  text-[whitesmoke] mb-[20px]  
                 text-sm rounded-2xl  uppercase w-[100px] h-[40px] font-light "
-                        onClick={(e) => {
-                            if (onClickEvent)
-                                onClickEvent(e);
-                        }}
-                    >Ok</button>
+                            onClick={(e) => {
+                                if (onClickEvent)
+                                    onClickEvent(e);
+                            }}
+                        >Ok</button>
+                    </div>
                 </div>
-            </div>
-        </Modal>
+            </Modal>
+        </>
+
     )
 }
 

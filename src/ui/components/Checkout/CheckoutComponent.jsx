@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import logger from "../../../logic/Logger/logger";
-import { useTransaction } from "../../contexts/TransactionContext";
+import { paymentNumberToName, useTransaction } from "../../contexts/TransactionContext";
 import SypagoLogo from "../../core/logo/SypagoLogo";
 import PayUserDataForm from "./Forms/PayUserDataForm";
 import SendingUserData from "./SendingUserData";
 import LoadModal from "../../core/modal/LoadModal";
-import { useNotificationModal } from "../../contexts/NotificationModalContext";
 import { useNotificationAlert } from "../../core/notifications/NotificationAlertModal";
 import { SignalRService } from "../../../logic/SignalRCom/SignalRCom";
 import { useConfig } from "../../contexts/ConfigContext";
@@ -14,6 +13,10 @@ import DetailConfirmation from "../DetailConfirmation/DetailConfirmation";
 import OtpForm from "./Forms/OtpForm";
 import Modal from "../../core/modal/Modal";
 import NotificationModal from "../../core/notifications/NotificationModal";
+import AcceptError from "../../../logic/models/AcceptError";
+import { useNavigate } from "react-router-dom";
+
+
 
 const translateXeffect = {
     effectVisible: "translate-x-0",
@@ -32,6 +35,51 @@ const translateYeffect = {
     effectTwoHidden: "translate-y-full "
 }
 
+const notificationInitialState = {
+    open: false,
+    refBanco: "",
+    refSypago: "",
+    montoCobrado: "",
+    montoPagado: "",
+    razon: "",
+    codigo: "",
+    operationResult: "",
+    typeOfNotification: "",
+}
+
+function notificationModalReducer(state, action) {
+
+    const data = action.payload;
+    switch (action.type) {
+        case "notification/open": {
+            return {
+                ...state,
+                open: true,
+                refSypago: data?.refSypago,
+                refBanco: data?.refBanco,
+                montoCobrado: data?.montoCobrado,
+                montoPagado: data?.montoPagado,
+                razon: data?.razon,
+                codigo: data?.codigo,
+                operationResult: data?.operationResult,
+                typeOfNotification: data?.typeOfNotification
+            }
+        }
+
+        case "notification/close": {
+            return {
+                ...state,
+                open: false
+            }
+        }
+    }
+}
+
+function useNotificationReducer() {
+    const [state, dispatch] = useReducer(notificationModalReducer, notificationInitialState);
+
+    return { notificationState: state, dispatchNotification: dispatch }
+}
 
 
 
@@ -52,7 +100,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
     const [loadModalMessage, setLoadModalMessage] = useState("");
 
-    const { openAlertNotification, closeAlertNotification } = useNotificationAlert();
+    const { openAlertNotification } = useNotificationAlert();
 
     const [openDetail, setOpenDetail] = useState(false);
 
@@ -61,11 +109,23 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
     const [receptSubmitData, setReceptSubmitData] = useState({});
 
 
+    const { notificationState, dispatchNotification } = useNotificationReducer();
+
+
+
     const timeoutPayRef = useRef(null);
 
     const { config } = useConfig();
 
     const sypagoUrl = config.sypago_url + "/CheckoutHub";
+
+    const navigate = useNavigate();
+
+
+    const linkRef = useRef(null);
+
+
+    const [callBackUrl, setCallBackUrl] = useState("");
 
     logger.info("Transaction State Renderizo Checkout Componenet", transactionState, config);
 
@@ -176,6 +236,13 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         setOpenOtp(true);
     }
 
+
+    function failPayProcess(message) {
+        setLoadModalMessage("");
+        setOpenLoadModal(false);
+        penAlertNotification("error", message)
+    }
+
     function onSubmitOtp(otpValue) {
 
         logger.info("OTP Value:", otpValue);
@@ -205,43 +272,118 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         ).then(result => {
 
             if (result && result.isSuccessful) {
-
                 timeoutPayRef.current = setTimeout(() => {
-                    setLoadModalMessage("");
-                    setOpenLoadModal(false);
-                    openAlertNotification("error", `Lo sentimos pero tenemos incovenientes 
-                        por favor verifique con su banco si los fondos han sido DEBITADOS REF:${transactionId}`)
-                }, 5000)
+                    failPayProcess(`Lo sentimos pero tenemos incovenientes 
+                        por favor verifique con su banco si los fondos han sido debitads Ref:${transactionId}`)
+                }, 180000)
 
                 return;
 
             }
-
-
             if (!result || !result.isSuccessful) {
+
+
+                const acceptResult = AcceptError.GenerateAcceptError(result?.err);
+
+                if (acceptResult?.GetErrorMessage() != "RATECHANGE") {
+                    logger.error("Error iniciando pago:", result)
+                    failPayProcess('Lo sentimos tenemos problemas para iniciar el pago')
+                    return
+                }
+
+                SignalRService.GetTransaction(transactionId, isBlueprint)
+                    .then(result => {
+                        if (!result.isSuccessful) {
+                            logger.error(result.err);
+                            failPayProcess("Lo sentimos tenemos problemas para iniciar el pago")
+                            return;
+                        }
+                        dispatch({ type: "transaction/setdata", payload: { transactionData: result.value } })
+                        setOpenLoadModal(false);
+                        openAlertNotification("info", "Lo sentimos pero la tasa BCV cambio verifique el nuevo monto e intente nuevamente")
+
+                    }).catch(err => {
+                        logger.error(err);
+                        failPayProcess("Lo sentimos tenemos problemas para iniciar el pago");
+                    })
 
 
 
             }
         }).catch(err => {
-
+            logger.error("Error iniciando pago:", err)
+            failPayProcess('Lo sentimos tenemos problemas para iniciar el pago')
         });
 
+        dispatch({ type: "transaction/process" })
         setLoadModalMessage("Procesando Pago");
         setOpenLoadModal(true);
         setOpenOtp(false);
+    }
 
+
+    async function onNotify(transactionStatusJson, hash) {
+
+
+
+        logger.info("Llego Notificacion a la vista", transactionStatusJson);
+
+
+        const transactionStatus = JSON.parse(transactionStatusJson);
+
+        if (timeoutPayRef.current)
+            clearInterval(timeoutPayRef.current);
+
+
+        dispatch({
+            type: "transaction/status",
+            payload: {
+                status: transactionStatus,
+                hash: hash,
+                originalMessageStatus: transactionStatusJson
+            }
+        })
+
+        const txSts = paymentNumberToName[transactionStatus.TxSts]
+
+        let isACCP = txSts == "ACCP";
+
+
+        let typeOfNotification = "SUCCESS"
+
+        if (!isACCP) {
+            typeOfNotification = "ERROR";
+        }
+
+
+        let referenciaIBp = "";
+
+        if (transactionStatus.EndToEndId && transactionStatus.EndToEndId > 8) {
+            referenciaIBp = transactionStatus.EndToEndId.slice(-8);
+        }
+
+        const data = {
+            refBanco: referenciaIBp,
+            refSypago: transactionStatus.TransactionId,
+            montoCobrado: transactionStatus.Amount,
+            montoPagado: transactionStatus.PayAmount,
+            codigo: transactionStatus.Rsn,
+            razon: !isACCP ?
+                transactionState.rjctCodes.find(v => v.code == transactionStatus.Rsn).description : "",
+            operationResult: txSts,
+            typeOfNotification: typeOfNotification
+
+        }
+
+
+        setOpenLoadModal(false);
+        dispatchNotification({ type: "notification/open", payload: { ...data } })
 
 
     }
 
 
-    const onNotify = async (r, hash) => {
-
-        // logger.info("Llego Notificacion a la vista", r);
-
-        // if (timeoutPayRef.current)
-        //     clearInterval(timeoutPayRef.current);
+    async function onReconnected() {
 
     }
 
@@ -266,13 +408,15 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
     useEffect(() => {
         if (transactionState.isError) {
             setOpenLoadModal(false);
-            openAlertNotification("error", "Oohh!!! Tenemos un Error", transactionState.error);
+            openAlertNotification("error", transactionState.error);
         }
     }, [transactionState.isError])
 
 
 
     useEffect(() => {
+
+
         if (!dataIsLoaded) {
             setLoadModalMessage("Cargando Operacion")
             setOpenLoadModal(true);
@@ -324,11 +468,8 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                         }).catch(err => {
 
                         })
-
-
-
-
                 }).catch(err => {
+                    logger.error(err);
                     openAlertNotification("error", "ERROR")
 
                 })
@@ -337,12 +478,20 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             setOpenLoadModal(false);
         }
 
-        if (dataIsLoaded)
+        if (dataIsLoaded) {
+
+
+
+
+
             SignalRService.notificationSub = onNotify;
+            SignalRService.onReconnectedSub = onReconnected;
+            return () => { SignalRService?.Stop() };
+        }
+
+
 
     }, [dataIsLoaded])
-
-
 
 
     logger.log("Renderizo CheckoutComponent with data:", transactionState.transactionData)
@@ -407,6 +556,8 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                     </section>
 
                 </main>
+
+                <a ref={linkRef} href={callBackUrl}></a>
             </div >
 
             <DetailConfirmation
@@ -432,12 +583,46 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 />
             </Modal>
 
-            <NotificationModal />
+            <NotificationModal
+                open={notificationState.open}
+                refSypago={notificationState.refSypago}
+                refBanco={notificationState.refBanco}
+                montoCobrado={notificationState.montoCobrado}
+                montoPagado={notificationState.montoPagado}
+                razon={notificationState.razon}
+                codigo={notificationState.codigo}
+                operationResult={notificationState.operationResult}
+                typeOfNotification={notificationState.typeOfNotification}
+                onClickEvent={() => {
+                    dispatchNotification({ type: "notification/close" });
+
+                    if (transactionState.transactionData.type == "RedirectToCheckout") {
+
+                        const resultForUrl =
+                            `?result=${transactionState.originalMessageStatus}&hash=${transactionState.hash}`
+
+                        let callBackUrl = transactionState.paymentStatus == "ACCP" ?
+                            transactionState.transactionData.notification_urls.sucessful_callback_url :
+                            transactionState.transactionData.notification_urls.failed_callback_url;
+
+                        callBackUrl = callBackUrl + resultForUrl;
+
+                        
+
+                        //navigate(callBackUrl)
+                        return;
+                    }
+                }}
+
+            />
+
 
             <LoadModal
                 open={openLoadModal}
                 message={loadModalMessage}
                 subscribeToController={false} />
+
+
 
 
         </>

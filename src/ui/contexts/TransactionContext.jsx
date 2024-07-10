@@ -1,5 +1,27 @@
 import { createContext, useContext, useReducer } from "react";
 
+
+export const paymentNameToNumber = {
+    PEND: 0,
+    PROC: 1,
+    ACCP: 2,
+    RJCT: 3,
+    CANC: 4
+
+}
+
+
+export const paymentNumberToName = {
+    0: "PEND",
+    1: "PROC",
+    2: "ACCP",
+    4: "RJCT",
+    5: "CANC"
+
+}
+
+
+
 const transactionInitialState = {
 
     transactionId: "",
@@ -27,6 +49,10 @@ const transactionInitialState = {
 
     isError: false,
     error: null,
+
+    statusMessage: null,
+    originalMessageStatus: null,
+    hash: null
 };
 
 
@@ -58,7 +84,26 @@ export const transactionReducer = (state, action) => {
             return {
                 ...state,
                 transactionData: action.payload.transactionData,
-                transactionDataIsLoaded: true
+                transactionDataIsLoaded: true,
+                paymentStatusDict: action.payload.transactionData.status
+            }
+        }
+
+        case "transaction/process": {
+            return {
+                ...state,
+                paymentStatus: "PROC"
+            }
+        }
+
+
+        case "transaction/status": {
+            return {
+                ...state,
+                statusMessage: action.payload.status,
+                paymentStatus: paymentNumberToName[action.payload.status.TxSts],
+                hash: action.payload.hash,
+                originalMessageStatus: action.payload.original
             }
         }
 

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function CloseXSimbol({ onClose }) {
     return (
-        <button className='w-9 bg-slate-100 rounded-full p-1.5 
+        <button className='w-9 bg-slate-100 rounded-full p-2 
         absolute top-1.5 right-2 shadow-lg swadow-slate-500 z-10' onClick={(e) => {
                 e.stopPropagation();
                 if (onClose) onClose(e);

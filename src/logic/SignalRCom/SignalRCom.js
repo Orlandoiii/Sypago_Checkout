@@ -30,6 +30,9 @@ class SignalRCom {
 
     onReconnectionSub = null;
 
+    onReconnectedSub = null;
+
+
     onCloseSub = null;
 
 

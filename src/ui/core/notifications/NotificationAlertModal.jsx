@@ -64,15 +64,15 @@ function NotificationAlertModal({ open, onClick, type, message }) {
     switch (type) {
         case "info":
             icon = <InfoIcon />;
-            title = "Oohh!!! Tenemos un Error"
+            title = "Importante!!!"
             break;
         case "success":
             icon = <SuccessIcon />;
-            title = "Oohh!!!"
+            title = "Excelente!!!"
             break;
         case "error":
             icon = <FailureIcon />;
-            title = "Oohh!!!"
+            title = "Oohh Error!!!"
             break;
 
     }

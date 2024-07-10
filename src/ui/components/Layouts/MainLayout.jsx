@@ -1,7 +1,6 @@
 import { useState } from "react";
 import LoadModal from "../../core/modal/LoadModal";
 import ConfigContextProvider from "../../contexts/ConfigContext";
-import NotificationModalContextProvider from "../../contexts/NotificationModalContext";
 import TransactionContextProvider from "../../contexts/TransactionContext";
 import NotificationAlertModalContextProvider from "../../core/notifications/NotificationAlertModal";
 
@@ -22,11 +21,9 @@ export default function MainLayout({ children }) {
 
             <ConfigContextProvider>
                 <NotificationAlertModalContextProvider>
-                    <NotificationModalContextProvider>
-                        <TransactionContextProvider>
-                            {children}
-                        </TransactionContextProvider>
-                    </NotificationModalContextProvider>
+                    <TransactionContextProvider>
+                        {children}
+                    </TransactionContextProvider>
                 </NotificationAlertModalContextProvider>
             </ConfigContextProvider>
 

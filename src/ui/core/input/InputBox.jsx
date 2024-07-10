@@ -142,7 +142,7 @@ export default function InputBox({
 
                 <input
                     className={`peer h-full w-full pt-2 px-4  
-                        rounded-md shadow-sm outline-none text-black font-medium border bg-white 
+                        rounded-md shadow-sm outline-none text-slate-800 font-medium border bg-white 
                        ${errMessage && errMessage.length > 0 ?
                             (!useStrongErrColor ? "border-gray-600" : "border-rose-700") :
                             (isFocus ? "border-blue-500" : "border-slate-300")} 
