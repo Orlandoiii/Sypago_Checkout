@@ -7,17 +7,25 @@ import {
 
 
 import CheckoutPage from "./ui/pages/CheckoutPage";
+import ErrorPage from "./ui/components/Error/ErrorPage";
 
 
 const router = createBrowserRouter([
   {
     path: "/checkout/:id",
     element: <CheckoutPage isBlueprint={false} />,
+    errorElement: <ErrorPage />
   },
   {
     path: "/checkout/blueprint/:id",
     element: <CheckoutPage isBlueprint={true} />,
+    errorElement: <ErrorPage />
   },
+  {
+    path: "*",
+    element: <NotFound />,
+    errorElement: <ErrorPage />
+  }
 
 ]);
 

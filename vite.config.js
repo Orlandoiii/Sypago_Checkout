@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/checkout/',
   server: {
     host: true, // Listen on all addresses (including LAN)
     port: 5173,
@@ -15,6 +16,6 @@ export default defineConfig({
     port: 5173, // Set your desired port for the preview server
   },
   build: {
-    outDir: "./server/ui/dist/"
+    outDir: "./server/ui/dist/",
   }
 })

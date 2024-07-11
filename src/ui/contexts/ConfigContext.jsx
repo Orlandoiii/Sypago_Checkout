@@ -17,7 +17,7 @@ async function LoadConfig() {
 
     logger.info("Config host/origin:", host);
 
-    let configRequest = await fetch(`/config.json`);
+    let configRequest = await fetch(import.meta.env.BASE_URL + '/config.json');
 
     logger.info("Config Request:", configRequest);
 

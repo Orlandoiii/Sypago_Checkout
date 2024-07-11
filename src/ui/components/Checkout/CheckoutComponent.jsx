@@ -217,7 +217,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             emisorObj.section_data.push(
                 {
                     name: "Monto",
-                    data: chargeAmout
+                    data: FormatAsFloat(chargeAmout)
                 })
         }
 

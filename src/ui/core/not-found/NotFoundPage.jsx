@@ -1,4 +1,7 @@
-export default function NotFoundComponent({ onBackClick }) {
+import { useConfig } from "../../contexts/ConfigContext"
+
+export default function NotFoundComponent({ }) {
+    const { config } = useConfig();
     return (
         <main className="w-screen h-screen">
             <section className="flex items-center h-full sm:p-16">
@@ -10,9 +13,9 @@ export default function NotFoundComponent({ onBackClick }) {
                         <polygon fill="currentColor" points="383.958 182.63 360.042 161.37 338.671 185.412 314.63 164.042 293.37 187.958 317.412 209.329 296.042 233.37 319.958 254.63 341.329 230.588 365.37 251.958 386.63 228.042 362.588 206.671 383.958 182.63"></polygon>
                     </svg>
                     <p className="text-3xl">Oouhh... Parece que estas visitando un recurso que no existe</p>
-                    <button className="px-8 py-3 font-semibold border border-black rounded-md hover:text-white 
-                    hover:bg-slate-900 transition-all duration-100" onClick={onBackClick}>Regresar
-                    </button>
+                    <a className="block px-8 py-3 font-semibold border border-black rounded-md hover:text-white 
+                    hover:bg-slate-900 transition-all duration-100" href={config.sypago_callback_url}>Regresar
+                    </a>
 
                 </div>
             </section>
