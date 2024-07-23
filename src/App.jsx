@@ -8,6 +8,7 @@ import {
 
 import CheckoutPage from "./ui/pages/CheckoutPage";
 import ErrorPage from "./ui/components/Error/ErrorPage";
+import NotFoundComponent from "./ui/core/not-found/NotFoundPage";
 
 
 const router = createBrowserRouter([
@@ -23,7 +24,7 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <NotFound />,
+    element: <NotFoundComponent />,
     errorElement: <ErrorPage />
   }
 

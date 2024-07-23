@@ -377,6 +377,7 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
                         label={"Doc"}
                         inputName={"doc_prefix"}
                         options={docsPrefix}
+                        openUp={true}
                     />
                 </div>
 
