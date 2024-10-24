@@ -20,7 +20,8 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.52.0",
     "react-router-dom": "^6.24.1",
-    "react-use-measure": "^2.1.1"
+    "react-use-measure": "^2.1.1",
+    "sypago-checkout": "file:"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

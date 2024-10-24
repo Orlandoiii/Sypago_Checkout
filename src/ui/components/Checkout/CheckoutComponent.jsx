@@ -638,7 +638,9 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                             {transactionState.isLoaded() && !transactionState.isError
                                 && <SendingUserData
-                                    userName={transactionState.transactionData?.receiving_user?.name}
+                                    userName={transactionState.transactionData?.sending_user?.name}
+                                    userDocument={transactionState.transactionData?.sending_user?.document_info?.type +
+                                        transactionState.transactionData?.sending_user?.document_info?.number}
                                     concept={transactionState.transactionData?.concept}
                                     monto={FormatAsFloat(transactionState.transactionData?.amount?.amt)}
                                     backUrl={transactionState.transactionData?.notification_urls?.return_front_end_url}

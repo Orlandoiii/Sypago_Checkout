@@ -83,7 +83,7 @@ export default function DraggableBox({ children, open, onClose, topStickyChild, 
                         dragElastic={{ top: 0, bottom: 1 }}
                         style={{ y }}
                         onClick={(e) => e.stopPropagation()}
-                        className="absolute bottom-0 w-full h-[60vh] bg-[whitesmoke]  
+                        className="absolute flex flex-col bottom-0 w-full h-[60vh] bg-[whitesmoke]  
                      rounded-t-3xl  overflow-hidden">
 
                         <button

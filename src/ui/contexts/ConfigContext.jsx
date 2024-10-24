@@ -19,6 +19,10 @@ async function LoadConfig() {
 
     let configRequest = await fetch(import.meta.env.BASE_URL + '/config.json');
 
+
+    //let configRequest = await fetch("http://localhost:5173" + '/config.json');
+
+
     logger.info("Config Request:", configRequest);
 
     let configJson = await configRequest.json();
