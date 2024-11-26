@@ -93,10 +93,6 @@ func main() {
 
 		fmt.Println("Response Status Code:", resp.StatusCode)
 
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to make request to SyPago"})
-			return
-		}
 		defer resp.Body.Close()
 
 		var sypagoResponse map[string]interface{}
