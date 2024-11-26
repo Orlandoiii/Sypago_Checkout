@@ -68,9 +68,9 @@ export default function LoadModal({ open, setOpen, message, setMessage,
                             ease: "easeInOut",
                             duration: 0.25
                         }}
-                        className="w-40 flex flex-col justify-center items-center" >
+                        className="w-45 flex flex-col justify-center items-center" >
 
-                        <h1 className={`text-[#0B416E] text-md mb-3 font-bold animate-pulse
+                        <h1 className={`text-main-bg text-lg mb-3 font-bold animate-pulse
                             ${message && message != '' ? "opacity-100" : "opacity-0"}`}>{message}</h1>
 
                         <LoadImage />

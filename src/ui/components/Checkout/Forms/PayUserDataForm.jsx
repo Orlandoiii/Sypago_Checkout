@@ -141,7 +141,7 @@ const acctTypeDictReverse = {
 
 
 
-function validateAmount(amt, amtObject) {
+export function validateAmount(amt, amtObject) {
 
     if (amtObject.type == "NONE")
         return "";

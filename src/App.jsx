@@ -3,22 +3,27 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-
+import { ThemeProvider } from "./ui/core/config/ThemeProvider";
 
 
 import CheckoutPage from "./ui/pages/CheckoutPage";
 import ErrorPage from "./ui/components/Error/ErrorPage";
 import NotFoundComponent from "./ui/core/not-found/NotFoundPage";
-
+import LoginForm from "./ui/components/Login/LoginForm";
 
 const router = createBrowserRouter([
   {
-    path: "/checkout/:id",
+    path: "/digitel",
     element: <CheckoutPage isBlueprint={false} />,
     errorElement: <ErrorPage />
   },
   {
-    path: "/checkout/blueprint/:id",
+    path: "/digitel/:id",
+    element: <CheckoutPage isBlueprint={false} />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: "/digitel/blueprint/:id",
     element: <CheckoutPage isBlueprint={true} />,
     errorElement: <ErrorPage />
   },
@@ -34,21 +39,11 @@ const router = createBrowserRouter([
 
 function App() {
 
-  // useEffect(() => {
-  //   if (isMobile) {
-  //     // Lock to portrait-primary (or any other value)
-  //     screen.orientation.lock('portrait-primary');
-
-  //     // Clean up the lock on component unmount
-  //     return () => screen.orientation.unlock();
-  //   }
-  // }, [])
-
   return (
-
-
     <>
-      <RouterProvider router={router} />
+      <ThemeProvider>
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </>
 
   )

@@ -205,7 +205,7 @@ function NotificationModal({
 
                         <button
                             type="button"
-                            className="text-center p-2 bg-[#0065BB]  text-[whitesmoke] mb-[20px]  
+                            className="text-center p-2 bg-primary  text-[whitesmoke] mb-[20px]  
                 text-sm rounded-2xl  uppercase w-[100px] h-[40px] font-light "
                             onClick={(e) => {
                                 if (onClickEvent)

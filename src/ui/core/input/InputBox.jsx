@@ -252,10 +252,10 @@ export default function InputBox({
 
                 <input
                     className={`peer h-full w-full pt-2 px-4  
-                        rounded-md shadow-sm outline-none text-slate-800 font-medium border bg-white 
+                        rounded-md shadow-sm outline-none text-slate-800 font-medium border bg-main-bg-secundary 
                        ${errMessage && errMessage.length > 0 ?
-                            (!useStrongErrColor ? "border-gray-600" : "border-rose-700") :
-                            (isFocus ? "border-blue-500" : "border-slate-300")} 
+                            (!useStrongErrColor ? "border-gray-600" : "border-error") :
+                            (isFocus ? "border-focus" : "border-slate-300")} 
                           `}
 
                     ref={e => {
@@ -289,7 +289,7 @@ export default function InputBox({
                 <div className={`pointer-events-none absolute left-0 bottom-0 h-full w-full rounded-md border-b-4 opacity-0 
                   transition-colors duration-200  
                   ${errMessage && errMessage.length > 0 ?
-                        (!useStrongErrColor ? "border-gray-600" : "border-rose-700") : "border-blue-500"} 
+                        (!useStrongErrColor ? "border-gray-600" : "border-error") : "border-focus"} 
                    peer-hover:opacity-100 peer-focus:opacity-100 
                  peer-disabled/input:border-gray-300 `}></div>
 

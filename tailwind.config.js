@@ -9,10 +9,17 @@ export default {
 
 
       colors: {
-        'primary': '#0065BB',
-        'secundary': '#00BCF4',
-        'tertiary': '#00BCF4',
-        'bg-test': 'hsla(207, 82%, 24%, 1)'
+        'main-bg': 'var(--main-bg)',
+        'main-bg-secundary': 'var(--main-bg-secundary)',
+
+
+        'primary': 'var(--primary)',
+        'secondary': 'var(--secondary)',
+        'tertiary': 'var(--tertiary)',
+
+        'error': 'var(--error)',
+        'success': 'var(--success)',
+        'focus': 'var(--focus)',
       },
 
     },

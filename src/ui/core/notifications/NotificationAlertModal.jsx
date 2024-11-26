@@ -104,7 +104,7 @@ function NotificationAlertModal({ open, onClick, type, message }) {
                         transition={
                             { ease: "easeInOut" }
                         }
-                        className="bg-[whitesmoke]  relative flex flex-col  z-50 justify-between
+                        className="bg-main-bg-secundary  relative flex flex-col  z-50 justify-between
                         px-3 py-8 min-w-[360px] min-h-[340px]  rounded-md shadow-md space-y-6 max-w-[370px]">
                         <div>
                             {icon}
@@ -117,7 +117,7 @@ function NotificationAlertModal({ open, onClick, type, message }) {
                         <div className='w-full flex justify-center'>
                             <button
                                 type="button"
-                                className="text-center p-2 bg-[#0065BB]  text-[whitesmoke] mb-[20px]  
+                                className="text-center p-2 bg-primary  text-[whitesmoke] mb-[20px]  
                 text-sm rounded-2xl  uppercase w-[100px] h-[40px] font-light "
                                 onClick={onClick}
                             >Ok</button>

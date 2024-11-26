@@ -1,5 +1,5 @@
 import React from 'react';
-import imagePath from "../../../assets/back_arrow_blue.png"
+import BackArrow from '../../core/icons/BackArrow';
 
 
 function isValidURL(str) {
@@ -36,12 +36,12 @@ function SendingUserData(
         text-[whitesmoke] p-4  ">
 
             {backUrl && isValidURL(backUrl) && <a
-                className="absolute top-8 left-6  bg-white rounded-xl flex justify-center 
-                items-center self-start p-1 md:top-[3.5rem] md:left-[3rem] md:p-3 md:px-4"
+                className="absolute top-8 left-6  bg-main-bg-secundary rounded-xl flex justify-center 
+                items-center self-start space-x-1 p-1 md:top-[3.5rem] md:left-[3rem] md:p-3 md:px-4"
                 href={backUrl}
             >
-                <img src={imagePath} alt="back_arrow" className="w-[30px] h-[30px]"></img>
-                <p className="text-[#0B416E] text-md font-semibold hidden md:block">Regresar</p>
+                <BackArrow />
+                <p className="text-main-bg text-md font-semibold hidden md:block">Regresar</p>
             </a>}
 
             <div className='flex flex-col justify-between items-center  
@@ -59,16 +59,16 @@ function SendingUserData(
                 <div className="flex flex-col items-center ">
 
                     <h2 className="text-lg font-thin md:text-xl">
-                        Por concepto de:
+                        Cobro por concepto de:
                     </h2>
-                    <h2 className="text-xl font-semibold text-center md:text-2xl">
+                    <h2 className="text-xl font-bold md:max-w-[75%] text-center md:text-2xl">
                         {concept}
                     </h2>
 
                 </div>
 
 
-                <div className="flex flex-col items-center justify-center  bg-white text-[#0B416E] 
+                <div className="flex flex-col items-center justify-center  bg-main-bg-secundary text-main-bg 
                 w-[265px] h-[85px] px-5  rounded-[30px] md:w-[330px] md:h-[100px]">
                     <h2 className="text-lg md:text-xl">Total a Pagar</h2>
                     <p className="text-xl font-semibold md:text-2xl">{monto}</p>
@@ -89,9 +89,6 @@ function SendingUserData(
 
 
         </div>
-
-
-
 
     )
 }

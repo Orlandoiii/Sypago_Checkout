@@ -15,7 +15,7 @@ import Modal from "../../core/modal/Modal";
 import NotificationModal from "../../core/notifications/NotificationModal";
 import AcceptError from "../../../logic/models/AcceptError";
 import { FormatAsFloat, ParseToFloat } from "../../core/input/InputBox";
-
+import Logo from "../../core/logo/Logo";
 
 
 const translateXeffect = {
@@ -613,15 +613,15 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         <>
             <div className='bg-transparent w-full h-screen flex justify-center items-center rounded-md shadow-md'>
 
-                <main className='relative bg-[#0B416E] flex flex-col  md:flex-row w-full h-full max-h-[1080px] max-w-[1920px] overflow-x-hidden '>
+                <main className='relative bg-main-bg flex flex-col  md:flex-row w-full h-full max-w-[1920px] overflow-x-hidden '>
 
 
                     <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 
                     transition-all ease-in-out duration-500 
                      ${!transactionState.isLoaded() || transactionState.isError ? "opacity-100" : "opacity-0"}
-                     ${transactionState.isError ? "-translate-y-[380%] md:-translate-y-[300%]" : "-translate-y-1/2"}`}>
+                     ${transactionState.isError ? "-translate-y-[280%] md:-translate-y-[250%]" : "-translate-y-1/2"}`}>
                         <div className="w-[350px] md:w-[560px] h-auto">
-                            <SypagoLogo negative={true} />
+                            <Logo negative={true}  />
                         </div>
                     </div>
 
@@ -655,11 +655,11 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                     <section className={`w-full h-full md:w-[50%] flex 
                 flex-col justify-center items-center   ${transactionState.isError ? "hidden" : "block"}
-                bg-[whitesmoke] py-8 rounded-t-[1.75rem] md:rounded-none md:rounded-l-[3.5rem] transition-all ease-in-out  duration-700 
+                bg-main-bg-secundary py-8 rounded-t-[1.75rem] md:rounded-none md:rounded-l-[3.5rem] transition-all ease-in-out  duration-700 
                             ${transactionState.isLoaded() && !transactionState.isError ? visebleTranslateEffect + " opacity-100" : effectTranslateTwo + " opacity-100"}`}>
 
                         <div className="hidden w-[380px] h-auto mb-8 md:block">
-                            <SypagoLogo />
+                            <Logo />
                         </div>
 
                         <div className={`w-full `} >
