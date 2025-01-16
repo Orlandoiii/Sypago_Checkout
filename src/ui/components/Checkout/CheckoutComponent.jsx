@@ -1,7 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import logger from "../../../logic/Logger/logger";
 import { paymentNumberToName, useTransaction } from "../../contexts/TransactionContext";
-import SypagoLogo from "../../core/logo/SypagoLogo";
 import PayUserDataForm from "./Forms/PayUserDataForm";
 import SendingUserData from "./SendingUserData";
 import LoadModal from "../../core/modal/LoadModal";
@@ -242,7 +241,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
     function failPayProcess(message) {
         setLoadModalMessage("");
         setOpenLoadModal(false);
-        penAlertNotification("error", message)
+        openAlertNotification("error", message)
     }
 
     function onSubmitOtp(otpValue) {
@@ -277,7 +276,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 timeoutPayRef.current = setTimeout(() => {
                     failPayProcess(`Lo sentimos pero tenemos incovenientes 
                         por favor verifique con su banco si los fondos han sido debitads Ref:${transactionId}`)
-                }, 180000)
+                }, 1000)
 
                 return;
 
@@ -605,7 +604,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
     }, [dataIsLoaded])
 
-    
+
 
     logger.log("Renderizo CheckoutComponent with data:", transactionState.transactionData)
 
@@ -622,7 +621,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                      ${!transactionState.isLoaded() || transactionState.isError ? "opacity-100" : "opacity-0"}
                      ${transactionState.isError ? "-translate-y-[280%] md:-translate-y-[250%]" : "-translate-y-1/2"}`}>
                         <div className="w-[350px] md:w-[560px] h-auto">
-                            <Logo negative={true}  />
+                            <Logo negative={true} />
                         </div>
                     </div>
 
@@ -657,7 +656,8 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                     <section className={`w-full h-full md:w-[50%] flex 
                 flex-col justify-center items-center   ${transactionState.isError ? "hidden" : "block"}
                 bg-main-bg-secundary py-8 rounded-t-[1.75rem] md:rounded-none md:rounded-l-[3.5rem] transition-all ease-in-out  duration-700 
-                            ${transactionState.isLoaded() && !transactionState.isError ? visebleTranslateEffect + " opacity-100" : effectTranslateTwo + " opacity-100"}`}>
+                            ${transactionState.isLoaded() && !transactionState.isError ? visebleTranslateEffect +
+                            " opacity-100" : effectTranslateTwo + " opacity-100"}`}>
 
                         <div className="hidden w-[380px] h-auto mb-8 md:block">
                             <Logo />
@@ -696,7 +696,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 onClose={() => { setOpenOtp(false) }}>
                 <OtpForm
                     otpLen={8}
-                    timerTime={35}
+                    timerTime={30}
                     isBlueprint={isBlueprint}
                     transactionId={transactionId}
                     transactionData={receptSubmitData}

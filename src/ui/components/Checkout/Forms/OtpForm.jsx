@@ -199,6 +199,7 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
 
 
     const startTimer = () => {
+        //console.log("startTimer")
         timerID.current = setInterval(() => {
             setSecondsRemaining(prevSeconds => {
 
@@ -209,12 +210,14 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
     }
 
     const stopTimer = () => {
+        //console.log("stopTimer")
         if (timerID.current)
             clearInterval(timerID.current);
     }
 
 
     function resetOtpForm() {
+        //console.log("resetOtpForm")
         setSecondsRemaining(timerTime);
         stopTimer();
         // Other resets if needed (OTP input, etc.)
@@ -241,6 +244,13 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
 
 
     }, [])
+
+
+    useEffect(() => {
+        if (secondsRemaining <= 0) {
+            stopTimer();
+        }
+    }, [secondsRemaining])
 
     logger.log("Renderizando OTP Form:", isBlueprint, transactionId, transactionData)
 
@@ -287,7 +297,7 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
             >
                 Confirmar
             </button>
-            {secondsRemaining < 0 ?
+            {secondsRemaining <= 0 ?
                 <a className="text-secundary cursor-pointer text-center text-md underline-offset-4 font-normal mt-2" aria-disabled=""
                     onClick={() => {
                         requestOtp(transactionId, isBlueprint, transactionData)

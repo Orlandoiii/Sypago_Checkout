@@ -92,10 +92,14 @@ export const transactionReducer = (state, action) => {
                 isBlueprintTransaction: false,
             }
         case "transaction/setdata": {
+            
+            //console.log("action.payload.transactionData", action.payload.transactionData)
+            
             return {
                 ...state,
                 transactionData: action.payload.transactionData,
                 transactionDataIsLoaded: true,
+                
                 paymentStatusDict: action.payload.transactionData.status
             }
         }

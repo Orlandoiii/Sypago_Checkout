@@ -19,13 +19,12 @@ export default function MainLayout({ children }) {
                 setMessage={setMessageLoadModal}
                 subscribeToController={true} />
 
-            <ConfigContextProvider>
+          
                 <NotificationAlertModalContextProvider>
                     <TransactionContextProvider>
                         {children}
                     </TransactionContextProvider>
                 </NotificationAlertModalContextProvider>
-            </ConfigContextProvider>
 
         </>
     )

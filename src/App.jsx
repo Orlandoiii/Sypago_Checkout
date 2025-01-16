@@ -9,7 +9,7 @@ import { ThemeProvider } from "./ui/core/config/ThemeProvider";
 import CheckoutPage from "./ui/pages/CheckoutPage";
 import ErrorPage from "./ui/components/Error/ErrorPage";
 import NotFoundComponent from "./ui/core/not-found/NotFoundPage";
-import LoginForm from "./ui/components/Login/LoginForm";
+import ConfigContextProvider from "./ui/contexts/ConfigContext";
 
 const router = createBrowserRouter([
   {
@@ -42,7 +42,9 @@ function App() {
   return (
     <>
       <ThemeProvider>
-        <RouterProvider router={router} />
+        <ConfigContextProvider>
+          <RouterProvider router={router} />
+        </ConfigContextProvider>
       </ThemeProvider>
     </>
 
