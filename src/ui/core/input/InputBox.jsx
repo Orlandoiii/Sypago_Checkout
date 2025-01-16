@@ -9,7 +9,9 @@ const emptyRegister = {
     ref: null,
 }
 function RemoveCharsOutOfRegex(value, regex) {
-    if (regex.source === '.') return value;
+    
+    if (regex.source === '.') 
+        return value;
 
     const regexCondition = `[^${regex.source.replaceAll('[', '').replaceAll(']', '').replaceAll('|', '')}]`;
     const negatedRegex = new RegExp(regexCondition, "g");

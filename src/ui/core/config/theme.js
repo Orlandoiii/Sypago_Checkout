@@ -10,9 +10,9 @@ export const themeConfig = {
 
     colors: {
         //mainBg: '#24262B', //Tunnal
-        //mainBg: '#0B416E', //Sypago
+        mainBg: '#0B416E', //Sypago
 
-        mainBg: '#8C0414', //Digitel
+        //mainBg: '#8C0414', //Digitel
 
 
         mainBgSecundary: '#F5F5F5', //Tunnal 
@@ -21,8 +21,8 @@ export const themeConfig = {
 
 
         //primary: '#C10000', //Tunnal
-        //primary: '#0065BB', //Sypago
-        primary: '#4D2680', //Digitel
+        primary: '#0065BB', //Sypago
+        //primary: '#4D2680', //Digitel
 
 
         secondary: '#00BCF4', //Sypago
@@ -33,15 +33,15 @@ export const themeConfig = {
         error: '#C10000', //Sypago
         success: '#00BCF4', //Sypago
 
-        //focus: '#0065BB', //Sypago
-        focus: '#7669A9', //Digitel
+        focus: '#0065BB', //Sypago
+        //focus: '#7669A9', //Digitel
     },
 
     logo: {
         // Reference to the SVG component
         //Component: SypagoLogo,
 
-        Component: DigitelLogo,
+        Component: SypagoLogo,
         // Default props for the logo
        
     },
@@ -51,10 +51,13 @@ export const themeConfig = {
     },
 
     loadImage: {
-        Component: LoadTunnalImage,
+        Component: SyPagoLoadImage,
     },
-    activateLogin: true,
-    activateShop: true,
+    activateLogin: false,
+    activateShop: false,
+
+    
+
 
 
 }

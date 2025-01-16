@@ -5,9 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   //base: '/checkout/',
-  //base: '/',
+  base: '/',
 
-  base: '/digitel/',
+  //base: '/digitel/',
   server: {
     host: true, // Listen on all addresses (including LAN)
     port: 5173,

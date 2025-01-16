@@ -13,17 +13,17 @@ import LoginForm from "./ui/components/Login/LoginForm";
 
 const router = createBrowserRouter([
   {
-    path: "/digitel",
+    path: "/checkout",
     element: <CheckoutPage isBlueprint={false} />,
     errorElement: <ErrorPage />
   },
   {
-    path: "/digitel/:id",
+    path: "/checkout/:id",
     element: <CheckoutPage isBlueprint={false} />,
     errorElement: <ErrorPage />
   },
   {
-    path: "/digitel/blueprint/:id",
+    path: "/checkout/blueprint/:id",
     element: <CheckoutPage isBlueprint={true} />,
     errorElement: <ErrorPage />
   },

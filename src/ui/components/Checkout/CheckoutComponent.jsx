@@ -605,6 +605,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
     }, [dataIsLoaded])
 
+    
 
     logger.log("Renderizo CheckoutComponent with data:", transactionState.transactionData)
 
