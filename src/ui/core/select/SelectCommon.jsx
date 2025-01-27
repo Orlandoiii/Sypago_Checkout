@@ -126,7 +126,7 @@ export function OptionsContainer({
     return (
         <div
             id="options"
-            className={`absolute w-full  ${openUp ? bottomSeparation : "top-18"} z-10 border-[#3B82F6]  
+            className={`absolute w-full  ${openUp ? bottomSeparation : "top-18"} z-10 border-primary  
             rounded-md overflow-auto transition-all duration-300  
             text-black translate-y-3",
             ${open ? 'max-h-52 border' : 'max-h-0 border-0'}`}>

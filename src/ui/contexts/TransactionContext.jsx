@@ -48,6 +48,9 @@ const transactionInitialState = {
     rjctCodeLoad: false,
 
 
+    bcvRates: null,
+    bcvRatesLoad: false,
+
     errorCode: "",
     isError: false,
     error: null,
@@ -58,12 +61,7 @@ const transactionInitialState = {
 };
 
 function createCodeDescriptionDictionary(data) {
-    const dictionary = {};
-
-    data.forEach(item => {
-        const parsedItem = JSON.parse(item);
-        dictionary[parsedItem.code] = parsedItem.description;
-    });
+    const dictionary = data;
 
     return dictionary;
 }
@@ -93,7 +91,6 @@ export const transactionReducer = (state, action) => {
             }
         case "transaction/setdata": {
             
-            //console.log("action.payload.transactionData", action.payload.transactionData)
             
             return {
                 ...state,
@@ -130,6 +127,13 @@ export const transactionReducer = (state, action) => {
                 ...state,
                 banks: action.payload.banks,
                 banksLoads: true
+            }
+        }
+        case "transaction/setbcvrates": {
+            return {
+                ...state,
+                bcvRates: action.payload.bcvRates,
+                bcvRatesLoad: true
             }
         }
 

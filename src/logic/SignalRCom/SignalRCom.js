@@ -144,10 +144,10 @@ class SignalRCom {
                 this.onCloseSub()
         })
 
-        this.connection.on("NotifyExternalApi", (result, hash) => {
-            logger.log("Llego Notificacion", result, hash);
+        this.connection.on("NotifyStatus", () => {
+            logger.log("Llego Notificacion");
             if (this.notificationSub)
-                this.notificationSub(result, hash);
+                this.notificationSub();
         });
 
         return "Conexion Ejecutada exitosamente";
@@ -198,14 +198,24 @@ class SignalRCom {
         }
     }
 
-    async RequestOtp(transactionId, payAmt, receptUser, receptDocumentType, isBlueprintOperation = false) {
+    async GetBcvRates() {
+        try {
+            let result = await this.connection.invoke("GetBcvRates");
+            return result;
+        } catch (err) {
+
+            logger.log(err);
+            throw err;
+        }
+    }
+    async RequestOtp(otpData, isBlueprintOperation = false) {
         try {
 
             const currentTime = Date.now();
             const elapsedTimeInSeconds = (currentTime - this.requestAlredyInit.lastRequest) / 1000;
 
             if (this.requestAlredyInit.alredyAsk && elapsedTimeInSeconds < 5) {
-                return { isSuccessful: true };
+                return true;
             }
 
             this.requestAlredyInit.alredyAsk = true;
@@ -217,27 +227,34 @@ class SignalRCom {
             if (isBlueprintOperation)
                 methodName = "RequestOtpBlueprint"
 
-            let result = await this.connection.invoke(methodName, transactionId, payAmt, receptUser, receptDocumentType);
+
+
+            logger.log("Method Name:", otpData);
+            let result = await this.connection.invoke(methodName, otpData);
+
+            if (!result) {
+                return false;
+            }
 
             return result;
         } catch (err) {
             logger.log(err);
-            throw err;
+            return false;
         }
     }
 
-    async AcceptTransaction(transactionId, payAmt, receptUser, otp, isBlueprintOperation = false) {
+    async AcceptTransaction(acceptData, isBlueprintOperation = false) {
         try {
 
-            let methodName = 'AcceptCheckoutTransactionExternal';
+            let methodName = 'InitTransaction';
 
             if (isBlueprintOperation) {
-                methodName = 'AcceptLinkWithBlueprint'
+                methodName = 'InitTransactionBlueprint'
             }
 
-            logger.log("Method Name:", methodName);
+            logger.log("Method Name:", acceptData);
 
-            let result = await this.connection.invoke(methodName, transactionId, payAmt, receptUser, otp);
+            let result = await this.connection.invoke(methodName, acceptData);
             return result;
         } catch (err) {
             logger.log(err);

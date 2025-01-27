@@ -26,6 +26,7 @@ func staticHandler(engine *gin.Engine) {
 	engine.Use(func(c *gin.Context) {
 		if !strings.Contains(c.Request.URL.Path, "request-sypago") {
 			// Check if the requested file exists
+
 			_, err := fs.Stat(dist, strings.TrimPrefix(c.Request.URL.Path, "/"))
 			if os.IsNotExist(err) {
 				// If the file does not exist, serve index.html

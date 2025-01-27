@@ -3,7 +3,7 @@ import NotificationModal from "../core/notifications/NotificationModal";
 
 export const NotificationModalContext = createContext({
     showNotification: (refBanco, refSypago, montoCobrado,
-        montoPagado, codigo, operationResult, typeOfNotification) => { },
+        montoPagado, codigo, operationResult, typeOfNotification, refInternal) => { },
     closeNotification: () => { },
     registerOnClickCallback: (onClickHandler) => { }
 });
@@ -28,10 +28,12 @@ export default function NotificationModalContextProvider({ children }) {
 
     const [typeOfNotification, setTypeOfNotification] = useState("INFO")
 
+    const [refInternal, setRefInternal] = useState("");
+
     const onClickHandlerRef = useRef(null);
 
     function showNotification(refBanco, refSypago, montoCobrado,
-        montoPagado, codigo, operationResult, typeOfNotification) {
+        montoPagado, codigo, operationResult, typeOfNotification, ref) {
 
         if (refSypago && refSypago !== "") {
             setRefSypago(refSypago);
@@ -55,6 +57,11 @@ export default function NotificationModalContextProvider({ children }) {
             setTypeOfNotification("");
         }
 
+        if (refInternal && refInternal !== "") {
+            setRefInternal(refInternal);
+        }
+
+
         setOpen(true);
     }
 
@@ -71,7 +78,7 @@ export default function NotificationModalContextProvider({ children }) {
         <NotificationModalContext.Provider value={{
             showNotification: showNotification,
             closeNotification: closeNotification,
-            registerOnClickCallback: registerOnClickCallback
+            registerOnClickCallback: registerOnClickCallback,
         }}>
 
             {children}
@@ -88,7 +95,9 @@ export default function NotificationModalContextProvider({ children }) {
                 montoCobrado={montoCobrado}
                 montoPagado={montoPagado}
                 refSypago={refSypago}
-                refBanco={refBanco} />
+                refBanco={refBanco}
+                refInternal={refInternal}
+            />
 
         </NotificationModalContext.Provider>
     )

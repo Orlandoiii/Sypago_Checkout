@@ -7,6 +7,9 @@ export default {
   theme: {
     extend: {
 
+      animation: {
+        'spin-slow': 'spin 1.5s linear infinite', // Adjust the 3s to your desired duration
+      },
 
       colors: {
         'main-bg': 'var(--main-bg)',

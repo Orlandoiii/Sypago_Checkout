@@ -160,23 +160,39 @@ const requestOtp = async function (transactionId, isBlueprint, transaction) {
 
     let typeOfDoc = transaction.doc_prefix;
 
-    let acctType = transaction.acct_type == "CELE" ? 1 : 0;
+    //let acctType = transaction.acct_type == "CELE" ? 1 : 0;
 
     let receptUser = {
         Id: transaction.doc_number,
         Account: {
             BankCode: transaction.bank_code,
             Id: transaction.acct_number,
-            Tp: acctType,
+            Tp: transaction.acct_type,
         }
     }
 
-    let result = await SignalRService.RequestOtp(transactionId, payAmt, receptUser, typeOfDoc, isBlueprint);
-
-    if (!result || !result.isSuccessful) {
-        if (result.err) {
-            logger.error(result.err)
+    const otpData = {
+        transaction_id: transactionId,
+        pay_amt: payAmt,
+        receiving_user: {
+            account: {
+                bank_code: receptUser.Account.BankCode,
+                number: receptUser.Account.Id,
+                type: receptUser.Account.Tp
+            },
+            document_info: {
+                type: typeOfDoc,
+                number: receptUser.Id
+            }
         }
+    }
+
+
+
+    let result = await SignalRService.RequestOtp(otpData, isBlueprint);
+
+    if (!result) {
+        logger.error("fallo request otp");
         throw new Error("fallo request otp");
     }
     return result;
@@ -185,7 +201,7 @@ const requestOtp = async function (transactionId, isBlueprint, transaction) {
 }
 
 
-function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, transactionId, transactionData = null }) {
+function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, transactionId, transactionData = null, onError = null }) {
 
     const [otpValue, setOtpValue] = useState('');
 
@@ -199,7 +215,6 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
 
 
     const startTimer = () => {
-        //console.log("startTimer")
         timerID.current = setInterval(() => {
             setSecondsRemaining(prevSeconds => {
 
@@ -210,14 +225,12 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
     }
 
     const stopTimer = () => {
-        //console.log("stopTimer")
         if (timerID.current)
             clearInterval(timerID.current);
     }
 
 
     function resetOtpForm() {
-        //console.log("resetOtpForm")
         setSecondsRemaining(timerTime);
         stopTimer();
         // Other resets if needed (OTP input, etc.)
@@ -233,6 +246,10 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
             })
             .catch((err => {
                 logger.error(err)
+                if (onError) {
+                    onError(err)
+                }
+
             }))
 
 

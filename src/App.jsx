@@ -12,19 +12,10 @@ import NotFoundComponent from "./ui/core/not-found/NotFoundPage";
 import ConfigContextProvider from "./ui/contexts/ConfigContext";
 
 const router = createBrowserRouter([
+
   {
-    path: "/checkout",
+    path: "/bitmercado/checkout/",
     element: <CheckoutPage isBlueprint={false} />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: "/checkout/:id",
-    element: <CheckoutPage isBlueprint={false} />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: "/checkout/blueprint/:id",
-    element: <CheckoutPage isBlueprint={true} />,
     errorElement: <ErrorPage />
   },
   {

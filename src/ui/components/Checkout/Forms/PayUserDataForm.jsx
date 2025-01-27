@@ -308,6 +308,8 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
 
                 })}>
 
+            <h1 className='text-xl  font-bold'>Datos del Pagador</h1>
+            <p className='text-md text-primary font-semibold md:text-lg'>Ingrese sus datos para realizar la compra</p>
             <SelectWithSearch
                 value={bank}
                 onChange={setBank}
@@ -423,11 +425,11 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
                     type="submit">Pagar</button>
 
 
-                <div className="flex justify-end">
+                {/* <div className="flex justify-end">
                     <a className='block text-primary 
                      px-4 py-2  text-center  cursor-pointer transition-all ease-in-out 
                     hover:scale-110 hover:text-secundary ' href={loginAndPayUrl}>Entrar y pagar con SyPago</a>
-                </div>
+                </div> */}
 
 
             </div>

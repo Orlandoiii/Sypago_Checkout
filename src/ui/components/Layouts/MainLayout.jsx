@@ -1,6 +1,5 @@
 import { useState } from "react";
 import LoadModal from "../../core/modal/LoadModal";
-import ConfigContextProvider from "../../contexts/ConfigContext";
 import TransactionContextProvider from "../../contexts/TransactionContext";
 import NotificationAlertModalContextProvider from "../../core/notifications/NotificationAlertModal";
 

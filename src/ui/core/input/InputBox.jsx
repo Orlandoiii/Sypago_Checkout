@@ -126,7 +126,7 @@ function Label({ inputName, label, useDotLabel, isFocus, value }) {
         <label className={`h-full absolute left-[0.360rem] top-0 flex items-center select-none px-3 
              transition-all ease-in-out duration-300 font-medium   bg-transparent origin-left text-md
         ${isFocus || (value && value?.toString().length > 0) ?
-                "text-slate-600 scale-75   -translate-y-3" : "text-slate-700   scale-100  translate-y-0 "}`}
+                "text-black font-semibold  scale-75   -translate-y-3" : "text-black   scale-100  translate-y-0 "}`}
             htmlFor={inputName}>
             {`${useDotLabel ? label + ":" : label}`}
         </label>
@@ -254,7 +254,7 @@ export default function InputBox({
 
                 <input
                     className={`peer h-full w-full pt-2 px-4  
-                        rounded-md shadow-sm outline-none text-slate-800 font-medium border bg-main-bg-secundary 
+                        rounded-md shadow-sm outline-none text-black  border bg-main-bg-secundary 
                        ${errMessage && errMessage.length > 0 ?
                             (!useStrongErrColor ? "border-gray-600" : "border-error") :
                             (isFocus ? "border-focus" : "border-slate-300")} 

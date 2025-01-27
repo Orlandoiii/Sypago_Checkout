@@ -28,8 +28,8 @@ function DescribeComponent({ title = '', value = '' }) {
 
     return (
         <div className="w-[275px] flex flex-row justify-between">
-            <p className=" text-[#4E5463]">{title}</p>
-            <p className="text-[#9BA1B0] font-light mr-6">{shortValue}</p>
+            <p className=" text-slate-900 font-medium">{title}</p>
+            <p className="text-black font-light mr-6">{shortValue}</p>
         </div>
     )
 }
@@ -38,9 +38,9 @@ function DescribeComponent({ title = '', value = '' }) {
 function RefComponent({ refTitle = '', refValue = '' }) {
 
     return (<div className="w-[275px] flex flex-row justify-between ">
-        <p className="text-[#4E5463] self-start">{refTitle}</p>
+        <p className="text-slate-900 font-medium self-start">{refTitle}</p>
         <div className="flex justify-between">
-            <p className="text-[#9BA1B0] font-light ">{refValue}</p>
+            <p className="text-black font-light ">{refValue}</p>
             <div className="ml-2">
                 <CopyButton textToCopy={refValue} />
             </div>
@@ -106,12 +106,13 @@ function NotificationModal({
     onClickEvent,
     refBanco = null,
     refSypago = null,
+    refInternal = null,
     montoCobrado = null,
     montoPagado = null,
     razon = null,
     codigo = null,
     operationResult = "PEND",
-    typeOfNotification = "SUCCESS",
+    typeOfNotification = "SUCCESS"
 }) {
 
 
@@ -160,6 +161,7 @@ function NotificationModal({
         }
 
     }, [])
+
     return (
         <>
             <Modal open={open}>
@@ -186,15 +188,19 @@ function NotificationModal({
 
                         <div className="space-y-[0.15rem] mb-[20px]">
 
+                            {(typeOfNotification == "INFO" || typeOfNotification == "ERROR") && refInternal &&
+                                <RefComponent refTitle="Ref Interna:" refValue={refInternal} />
+                            }
+
                             {refSypago && <RefComponent refTitle="Ref. SyPago:" refValue={refSypago} />}
 
                             {refBanco && <RefComponent refTitle="Ref. Banco:" refValue={refBanco} />}
 
                             {operationResult == "ACCP" && montoCobrado &&
-                                <DescribeComponent title={amtsEquals ? "Monto:" : "Monto cobrado:"} value={montoCobrado} />}
+                                <DescribeComponent title={amtsEquals ? "Monto:" : "Monto:"} value={montoCobrado} />}
 
-                            {!amtsEquals && operationResult == "ACCP"
-                                && montoPagado && <DescribeComponent title="Monto pagado:" value={montoPagado} />}
+                            {/* {!amtsEquals && operationResult == "ACCP"
+                                && montoPagado && <DescribeComponent title="Monto pagado:" value={montoPagado} />} */}
 
                             {typeOfNotification == "ERROR" && codigo && <DescribeComponent title="Código:" value={codigo} />}
 

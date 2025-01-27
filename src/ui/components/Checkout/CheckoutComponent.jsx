@@ -17,6 +17,45 @@ import { FormatAsFloat, ParseToFloat } from "../../core/input/InputBox";
 import Logo from "../../core/logo/Logo";
 
 
+// const productsExample = [
+//     {
+//         id: 1,
+//         title: "Portable Stereo Speaker",
+//         price: 230.49,
+//         image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=2069&auto=format&fit=crop",
+//         quantity: 1
+//     },
+//     {
+//         id: 2,
+//         title: "Wireless Headphones",
+//         price: 159.99,
+//         image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=2070&auto=format&fit=crop",
+//         quantity: 1
+//     },
+//     {
+//         id: 3,
+//         title: "Smart Watch Pro",
+//         price: 299.99,
+//         image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=2064&auto=format&fit=crop",
+//         quantity: 1
+//     },
+//     {
+//         id: 4,
+//         title: "Wireless Earbuds",
+//         price: 129.99,
+//         image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=2069&auto=format&fit=crop",
+//         quantity: 1
+//     },
+//     {
+//         id: 5,
+//         title: "Gaming Mouse",
+//         price: 79.99,
+//         image: "https://images.unsplash.com/photo-1527814050087-3793815479db?q=80&w=1928&auto=format&fit=crop",
+//         quantity: 1
+//     }
+// ];
+
+
 const translateXeffect = {
     effectVisible: "translate-x-0",
 
@@ -44,6 +83,7 @@ const notificationInitialState = {
     codigo: "",
     operationResult: "",
     typeOfNotification: "",
+    refInternal: ""
 }
 
 function notificationModalReducer(state, action) {
@@ -51,6 +91,7 @@ function notificationModalReducer(state, action) {
     const data = action.payload;
     switch (action.type) {
         case "notification/open": {
+
             return {
                 ...state,
                 open: true,
@@ -61,7 +102,8 @@ function notificationModalReducer(state, action) {
                 razon: data?.razon,
                 codigo: data?.codigo,
                 operationResult: data?.operationResult,
-                typeOfNotification: data?.typeOfNotification
+                typeOfNotification: data?.typeOfNotification,
+                refInternal: data?.refInternal
             }
         }
 
@@ -80,6 +122,65 @@ function useNotificationReducer() {
     return { notificationState: state, dispatchNotification: dispatch }
 }
 
+function getRate(bcvRates) {
+    for (const rate of bcvRates) {
+        if (rate.code == "USD") {
+            return rate.rate;
+        }
+    }
+    return null;
+}
+function convertCurrency(amount, currency, isBs, bcvRates) {
+
+    logger.info("convertCurrency", bcvRates)
+
+    if (bcvRates == null || !Array.isArray(bcvRates))
+        return amount;
+
+    if (currency == "VES" && isBs) {
+        return amount;
+    }
+    if (currency == "USD" && !isBs) {
+        return amount;
+    }
+    const rate = getRate(bcvRates);
+
+
+    if (currency == "VES") {
+        if (isBs) {
+            return amount;
+        }
+        return amount / rate;
+    }
+
+    if (currency == "USD") {
+        if (!isBs) {
+            return amount;
+        }
+        return amount * rate;
+    }
+
+}
+
+function getStatusDescription(code, rejectCodes) {
+    if (!rejectCodes || !Array.isArray(rejectCodes)) return "";
+
+    const status = rejectCodes.find(s => s.code === code);
+    return status ? status.description : "";
+}
+
+function getSendingUserId(transactionState) {
+    if (transactionState == null || transactionState?.transactionData == null)
+        return "";
+
+    const t = transactionState?.transactionData
+    let sendingUserId = ""
+
+    if (t.sending_user != null) {
+        sendingUserId = t.sending_user.document_info.type + t.sending_user.document_info.number
+    }
+    return sendingUserId
+}
 
 
 function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
@@ -111,12 +212,15 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
     const { notificationState, dispatchNotification } = useNotificationReducer();
 
 
+    const [isBs, setIsBs] = useState(true);
 
     const timeoutPayRef = useRef(null);
 
+    const getTransactionInterval = useRef(null);
+
     const { config } = useConfig();
 
-    const sypagoUrl = config.sypago_url + "/CheckoutHub";
+    const sypagoUrl = config.sypago_url + "/bitmercado/checkouthub";
 
 
 
@@ -147,7 +251,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                 {
                     name: "Nombre",
-                    data: sendingUserData.name
+                    data: "Bit Mercado Digital"
                 },
                 {
                     name: "Nro Documento",
@@ -192,9 +296,13 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         }
 
 
-        const chargeAmout = amount.amt;
-        const payAmt = receivingUserData.amt;
+        let chargeAmout = amount.amt;
+        let payAmt = receivingUserData.amt;
 
+
+        if (amount.currency == "USD") {
+            chargeAmout = convertCurrency(chargeAmout, "USD", true, transactionState.bcvRates);
+        }
 
         if (amount.type != "NONE" && chargeAmout !== payAmt) {
 
@@ -202,7 +310,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             emisorObj.section_data.push(
                 {
                     name: "Monto Cobrado",
-                    data: FormatAsFloat(chargeAmout)
+                    data: FormatAsFloat(chargeAmout) + " Bs"
                 })
             receptObj.section_data.push({
                 name: "Monto Pagado",
@@ -216,7 +324,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             emisorObj.section_data.push(
                 {
                     name: "Monto",
-                    data: FormatAsFloat(chargeAmout)
+                    data: FormatAsFloat(chargeAmout) + " Bs"
                 })
         }
 
@@ -255,7 +363,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
         const typeOfDoc = transaction.doc_prefix;
 
-        const acctType = transaction.acct_type == "CELE" ? 1 : 0;
+        //const acctType = transaction.acct_type == "CELE" ? 1 : 0;
 
         const otp = otpValue;
 
@@ -264,56 +372,75 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             Account: {
                 BankCode: transaction.bank_code,
                 Id: transaction.acct_number,
-                Tp: acctType,
+                Tp: transaction.acct_type,
             }
         }
 
-        SignalRService.AcceptTransaction(transactionId, payAmt,
-            receptUser, otp, isBlueprint
+
+        const acceptData = {
+            transaction_id: transactionId,
+            pay_amt: payAmt,
+            receiving_user: {
+                account: {
+                    bank_code: receptUser.Account.BankCode,
+                    number: receptUser.Account.Id,
+                    type: receptUser.Account.Tp
+                },
+                document_info: {
+                    type: typeOfDoc,
+                    number: receptUser.Id
+                }
+            },
+            otp: otp
+        }
+
+
+
+        SignalRService.AcceptTransaction(acceptData, isBlueprint
         ).then(result => {
 
-            if (result && result.isSuccessful) {
+            if (result) {
+
                 timeoutPayRef.current = setTimeout(() => {
                     failPayProcess(`Lo sentimos pero tenemos incovenientes 
-                        por favor verifique con su banco si los fondos han sido debitads Ref:${transactionId}`)
-                }, 1000)
+                        por favor verifique con su banco si los fondos han sido debitados Ref:${transactionId} y recargue la pagina`)
+                }, 120000)
+
+
+                getTransactionInterval.current = setInterval(async () => {
+
+                    logger.info("Pidiendo status de la transaccion")
+
+                    const response = await fetch(config.sypago_url + "/bitmercado/transaction/" + transactionId)
+
+                    if (response.status != 200)
+                        return;
+
+                    const transactionStatus = await response.json();
+
+                    logger.info("Transaction HTTP Status:", transactionStatus)
+
+                    if (transactionStatus.status != "PEND" && transactionStatus.status != "PROC") {
+                        clearInterval(getTransactionInterval.current);
+                        processTransaction(transactionStatus)
+                        return;
+                    }
+
+                }, 5000)
+
 
                 return;
 
             }
-            if (!result || !result.isSuccessful) {
 
 
-                const acceptResult = AcceptError.GenerateAcceptError(result?.err);
+            failPayProcess('Lo sentimos tenemos problemas para iniciar el pago, por favor recargue la pagina e intente nuevamente')
+            return
 
-                if (acceptResult?.GetErrorMessage() != "RATECHANGE") {
-                    logger.error("Error iniciando pago:", result)
-                    failPayProcess('Lo sentimos tenemos problemas para iniciar el pago')
-                    return
-                }
-
-                SignalRService.GetTransaction(transactionId, isBlueprint)
-                    .then(result => {
-                        if (!result.isSuccessful) {
-                            logger.error(result.err);
-                            failPayProcess("Lo sentimos tenemos problemas para iniciar el pago")
-                            return;
-                        }
-                        dispatch({ type: "transaction/setdata", payload: { transactionData: result.value } })
-                        setOpenLoadModal(false);
-                        openAlertNotification("info", "Lo sentimos pero la tasa BCV cambio verifique el nuevo monto e intente nuevamente")
-
-                    }).catch(err => {
-                        logger.error(err);
-                        failPayProcess("Lo sentimos tenemos problemas para iniciar el pago");
-                    })
-
-
-
-            }
         }).catch(err => {
             logger.error("Error iniciando pago:", err)
             failPayProcess('Lo sentimos tenemos problemas para iniciar el pago')
+            return;
         });
 
         dispatch({ type: "transaction/process" })
@@ -322,30 +449,17 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         setOpenOtp(false);
     }
 
-
-    async function onNotify(transactionStatusJson, hash) {
-
-
-
-        logger.info("Llego Notificacion a la vista", transactionStatusJson);
-
-
-        const transactionStatus = JSON.parse(transactionStatusJson);
+    function processTransaction(transactionStatus) {
 
         if (timeoutPayRef.current)
             clearInterval(timeoutPayRef.current);
 
+        if (getTransactionInterval.current)
+            clearInterval(getTransactionInterval.current);
 
-        dispatch({
-            type: "transaction/status",
-            payload: {
-                status: transactionStatus,
-                hash: hash,
-                original: transactionStatusJson
-            }
-        })
 
-        const txSts = paymentNumberToName[transactionStatus.TxSts]
+        const txSts = transactionStatus.status
+
 
         let isACCP = txSts == "ACCP";
 
@@ -354,28 +468,32 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
         if (!isACCP) {
             typeOfNotification = "ERROR";
+
+            if (transactionStatus.status == "PROC" || transactionStatus.status == "PEND") {
+                typeOfNotification = "INFO";
+            }
         }
 
 
         let referenciaIBp = "";
 
-        if (transactionStatus.EndToEndId && transactionStatus.EndToEndId > 8) {
-            referenciaIBp = transactionStatus.EndToEndId.slice(-8);
+        let referenciaSypago = transactionStatus.transactionIdSypago
+
+        let referenciaInternal = transactionStatus.transactionId
+
+        if (transactionStatus.endToEndId && transactionStatus.endToEndId > 8) {
+            referenciaIBp = transactionStatus.endToEndId.slice(-8);
         }
-
-
-
-        const rsn = !isACCP ? transactionState.rjctCodes[transactionStatus.Rsn] : "";
-
 
 
         const data = {
             refBanco: referenciaIBp,
-            refSypago: transactionStatus.TransactionId,
-            montoCobrado: FormatAsFloat(transactionStatus.Amount),
-            montoPagado: FormatAsFloat(transactionStatus.PayAmount),
-            codigo: transactionStatus.Rsn,
-            razon: rsn,
+            refSypago: referenciaSypago,
+            refInternal: referenciaInternal,
+            montoCobrado: FormatAsFloat(transactionStatus.amount.amt),
+            montoPagado: FormatAsFloat(transactionStatus.amount.pay_amt),
+            codigo: transactionStatus.rsn,
+            razon: getStatusDescription(transactionStatus.rsn, transactionState.rjctCodes),
             operationResult: txSts,
             typeOfNotification: typeOfNotification
 
@@ -383,13 +501,36 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
 
         setOpenLoadModal(false);
-        dispatchNotification({ type: "notification/open", payload: { ...data } })
 
+        dispatchNotification({ type: "notification/open", payload: { ...data } })
+    }
+
+    async function onNotify() {
+
+        logger.info("Llego Notificacion del status");
+
+        if (timeoutPayRef.current)
+            clearInterval(timeoutPayRef.current);
+
+        if (getTransactionInterval.current)
+            clearInterval(getTransactionInterval.current);
+
+
+        const transactionStatus = await SignalRService.GetTransaction(transactionId, isBlueprint)
+
+        if (!transactionStatus)
+            return;
+
+        processTransaction(transactionStatus)
 
     }
 
-
     async function onReconnected() {
+
+        const transactionStatus = await SignalRService.GetTransaction(transactionId, isBlueprint)
+
+        if (transactionStatus && (transactionStatus.status == "ACCP" || transactionStatus.status == "RJCT"))
+            processTransaction(transactionStatus)
 
     }
 
@@ -427,31 +568,33 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
             let referenciaIBp = "";
 
-            if (transaction.end_to_end && transaction.end_to_end > 8) {
-                referenciaIBp = transaction.end_to_end.slice(-8);
+            if (transaction.endToEndId != null && transaction.endToEndId > 8) {
+                referenciaIBp = transaction.endToEndId.slice(-8);
             }
 
             let isACCP = transaction.status == "ACCP";
-
-
 
             let typeOfNotification = "SUCCESS"
 
             if (!isACCP) {
                 typeOfNotification = "ERROR";
+                if (transaction.status == "PROC") {
+                    typeOfNotification = "INFO";
+                }
             }
 
-            const rsn = !isACCP ? transactionState.rjctCodes[transaction.rsn] : "";
+            logger.info("RAZON:", transactionState.rjctCodes)
 
             const data = {
+                refInternal: transaction.transactionId,
                 refBanco: referenciaIBp,
-                refSypago: transaction.transaction_id,
+                refSypago: transaction.transactionIdSypago,
                 montoCobrado: FormatAsFloat(transaction.amount.amt),
                 montoPagado: FormatAsFloat(transaction.amount.pay_amt),
                 codigo: transaction.rsn,
-                razon: rsn,
+                razon: getStatusDescription(transaction.rsn, transactionState.rjctCodes),
                 operationResult: transaction.status,
-                typeOfNotification: typeOfNotification
+                typeOfNotification: typeOfNotification,
 
             }
 
@@ -469,7 +612,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
     }, [transactionState.isError, dataIsLoaded])
 
 
-
     useEffect(() => {
 
 
@@ -477,20 +619,45 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             setLoadModalMessage("Cargando Operacion")
             setOpenLoadModal(true);
 
+
+
             SignalRService.Init(sypagoUrl)
                 .then(() => {
+
+
+
+                    SignalRService.GetBcvRates()
+                        .then((r) => {
+                            logger.info("RESULT BCV RATES", r)
+                            dispatch({
+                                type: "transaction/setbcvrates",
+                                payload: { bcvRates: r }
+                            })
+                        }).catch(err => {
+                            logger.error(err)
+                            dispatch({
+                                type: "transaction/seterror",
+                                payload: {
+                                    error: "No se pudo obtener las tasas de BCV",
+                                    errorCode: err.message,
+                                    transactionData: {},
+                                    transactionDataIsLoaded: false,
+                                }
+                            })
+                        })
 
 
                     SignalRService.GetAllBanks()
                         .then((b) => {
                             logger.info("RESULT Banks", b);
 
-                            if (!b.isSuccessful) {
+                            if (b == null) {
                                 logger.error(b.err);
                                 throw new Error(b);
                             }
 
-                            dispatch({ type: "transaction/setbanks", payload: { banks: b.value } })
+
+                            dispatch({ type: "transaction/setbanks", payload: { banks: b } })
                         }).catch(err => {
 
                             dispatch({
@@ -507,31 +674,28 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                         .then((t) => {
                             logger.info("RESULT Transaction", t);
 
-                            if (!t.isSuccessful) {
+                            if (t == null || t.status != "PEND") {
 
-                                logger.error(t.err)
 
-                                if (t.err == "NOTPEND") {
+                                logger.error("La operacion ya no esta pendiente:", t);
 
-                                    logger.error("La operacion ya no esta pendiente:", t.value);
+                                if (t.status != "PEND") {
 
                                     dispatch({
                                         type: "transaction/seterror",
                                         payload: {
                                             error: t.err,
                                             errorCode: "NOTPEND",
-                                            transactionData: t.value,
+                                            transactionData: t,
                                             transactionDataIsLoaded: true,
                                         }
                                     })
                                     return;
                                 }
 
-                                throw new Error(t.err);
-
                             }
 
-                            dispatch({ type: "transaction/setdata", payload: { transactionData: t.value } })
+                            dispatch({ type: "transaction/setdata", payload: { transactionData: t } })
 
                         }).catch(err => {
 
@@ -551,12 +715,16 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                         .then((c) => {
                             logger.info("RESULT RJCT CODES", c);
 
-                            if (!c.isSuccessful) {
+                            if (c == null) {
                                 logger.error(c.err);
                                 throw new Error(c.err);
                             }
 
-                            dispatch({ type: "transaction/setcodes", payload: { codes: c.value } })
+
+                            dispatch({
+                                type: "transaction/setcodes",
+                                payload: { codes: c }
+                            })
 
                         }).catch(err => {
 
@@ -570,6 +738,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                                 }
                             })
                         })
+
 
                 }).catch(err => {
 
@@ -597,6 +766,9 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         if (dataIsLoaded) {
             SignalRService.notificationSub = onNotify;
             SignalRService.onReconnectedSub = onReconnected;
+
+            setIsBs(transactionState.transactionData.amount.currency == "VES")
+
             return () => { SignalRService?.Stop() };
         }
 
@@ -611,24 +783,22 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
     return (
         <>
+
             <div className='bg-transparent w-full h-screen flex justify-center items-center rounded-md shadow-md'>
 
-                <main className='relative bg-main-bg flex flex-col  md:flex-row w-full h-full max-w-[1920px] overflow-x-hidden '>
+                <main className='relative bg-main-bg flex flex-col  md:flex-row w-full h-full max-w-[1920px] overflow-x-hidden overflow-y-auto'>
 
 
                     <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 
                     transition-all ease-in-out duration-500 
                      ${!transactionState.isLoaded() || transactionState.isError ? "opacity-100" : "opacity-0"}
-                     ${transactionState.isError ? "-translate-y-[280%] md:-translate-y-[250%]" : "-translate-y-1/2"}`}>
+                     ${transactionState.isError ? "-translate-y-[300%] md:-translate-y-[350%]" : "-translate-y-1/2"}`}>
                         <div className="w-[350px] md:w-[560px] h-auto">
                             <Logo negative={true} />
                         </div>
                     </div>
 
                     <section className={`w-full  md:w-[50%] h-full`}>
-
-
-
 
                         <div className={`w-full h-full transition-all ease-in-out duration-700
                             
@@ -638,12 +808,16 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                             {transactionState.isLoaded() && !transactionState.isError
                                 && <SendingUserData
-                                    userName={transactionState.transactionData?.sending_user?.name}
-                                    userDocument={transactionState.transactionData?.sending_user?.document_info?.type +
-                                        transactionState.transactionData?.sending_user?.document_info?.number}
+                                    isBs={isBs}
+                                    setIsBs={setIsBs}
+                                    userName={""}
+                                    userDocument={getSendingUserId(transactionState)}
                                     concept={transactionState.transactionData?.concept}
-                                    monto={FormatAsFloat(transactionState.transactionData?.amount?.amt)}
+                                    monto={FormatAsFloat(convertCurrency(transactionState.transactionData?.amount?.amt,
+                                        transactionState.transactionData?.amount?.currency, isBs, transactionState.bcvRates))}
+                                    rate={FormatAsFloat(getRate(transactionState.bcvRates))}
                                     backUrl={transactionState.transactionData?.notification_urls?.return_front_end_url}
+                                    products={[]}
                                 />}
 
                         </div>
@@ -701,6 +875,10 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                     transactionId={transactionId}
                     transactionData={receptSubmitData}
                     onSubmitOtpEvent={onSubmitOtp}
+                    onError={(err) => {
+                        setOpenOtp(false)
+                        openAlertNotification("error", "Error al solicitar el token por favor intente nuevamente")
+                    }}
                 />
             </Modal>
 
@@ -714,25 +892,13 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 codigo={notificationState.codigo}
                 operationResult={notificationState.operationResult}
                 typeOfNotification={notificationState.typeOfNotification}
+                refInternal={notificationState.refInternal}
+
                 onClickEvent={() => {
                     dispatchNotification({ type: "notification/close" });
 
-                    let callBack = config.sypago_callback_url;
+                    let callBack = transactionState.transactionData?.notification_urls?.return_front_end_url;
 
-                    if (transactionState.transactionData.type == "RedirectToCheckout"
-                        && !transactionState.isError) {
-
-                        const resultForUrl =
-                            `?result=${transactionState.originalMessageStatus}&hash=${transactionState.hash}`
-
-                        const url = transactionState.paymentStatus == "ACCP" ?
-                            transactionState.transactionData.notification_urls.sucessful_callback_url :
-                            transactionState.transactionData.notification_urls.failed_callback_url;
-
-                        callBack = url + resultForUrl;
-
-
-                    }
 
                     linkRef.current.href = callBack;
                     linkRef.current.click();

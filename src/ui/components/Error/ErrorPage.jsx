@@ -1,3 +1,4 @@
+import { useRouteError } from "react-router-dom";
 import logger from "../../../logic/Logger/logger";
 import { ErrorInternal } from "../../core/error/ErrorPage";
 
