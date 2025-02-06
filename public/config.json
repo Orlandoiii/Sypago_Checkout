@@ -1,4 +1,4 @@
 {
-    "sypago_url": "https://pruebas.sypago.net",
-    "sypago_callback_url": "https://pruebas.sypago.net"
+    "sypago_url": "http://localhost:5253",
+    "sypago_callback_url": "http://localhost:5253"
 }

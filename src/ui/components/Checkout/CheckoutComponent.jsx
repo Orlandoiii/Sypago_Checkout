@@ -813,11 +813,15 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                                     userName={""}
                                     userDocument={getSendingUserId(transactionState)}
                                     concept={transactionState.transactionData?.concept}
-                                    monto={FormatAsFloat(convertCurrency(transactionState.transactionData?.amount?.amt,
+                                    monto={transactionState.transactionData?.amount.amt}
+                                    montoDisplay={FormatAsFloat(convertCurrency(transactionState.transactionData?.amount?.amt,
                                         transactionState.transactionData?.amount?.currency, isBs, transactionState.bcvRates))}
-                                    rate={FormatAsFloat(getRate(transactionState.bcvRates))}
+                                    rateDisplay={FormatAsFloat(getRate(transactionState.bcvRates))}
+                                    rate={getRate(transactionState.bcvRates)}
                                     backUrl={transactionState.transactionData?.notification_urls?.return_front_end_url}
                                     products={[]}
+
+
                                 />}
 
                         </div>

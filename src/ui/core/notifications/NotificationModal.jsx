@@ -5,6 +5,9 @@ import Modal from "../modal/Modal";
 import { useState } from "react";
 import { useEffect } from "react";
 import ConfettiGenerator from "confetti-js";
+import ShareIcon from "../icons/ShareIcon";
+import html2canvas from 'html2canvas';
+import BitMercadoDigitalLogo from "../logo/BitMercadoDigitalLogo";
 
 function Title(operationResult) {
     switch (operationResult) {
@@ -37,11 +40,11 @@ function DescribeComponent({ title = '', value = '' }) {
 
 function RefComponent({ refTitle = '', refValue = '' }) {
 
-    return (<div className="w-[275px] flex flex-row justify-between ">
+    return (<div className=" w-[275px] flex flex-row justify-between ">
         <p className="text-slate-900 font-medium self-start">{refTitle}</p>
         <div className="flex justify-between">
             <p className="text-black font-light ">{refValue}</p>
-            <div className="ml-2">
+            <div className="ml-2 flex justify-center items-center">
                 <CopyButton textToCopy={refValue} />
             </div>
         </div>
@@ -49,7 +52,7 @@ function RefComponent({ refTitle = '', refValue = '' }) {
 
 }
 
-function ErrorDescriptionComponent({ value = '' }) {
+function ErrorDescriptionComponent({ value = '', showArrow = true }) {
 
     const isLarge = value?.length > 16;
 
@@ -74,7 +77,7 @@ function ErrorDescriptionComponent({ value = '' }) {
 
             </div>
 
-            {isLarge && <button className="absolute w-[32px] h-[32px] right-0" onClick={
+            {isLarge && showArrow && <button className="absolute w-[32px] h-[32px] right-0" onClick={
                 (e) => {
                     setShowDetail(!showDetail);
 
@@ -117,7 +120,9 @@ function NotificationModal({
 
 
     const canvasRef = useRef(null);
+    const modalContentRef = useRef(null);
 
+    const [showArrow, setShowArrow] = useState(true);
 
     const [confettiActive, setConfetiActive] = useState(false);
 
@@ -162,15 +167,90 @@ function NotificationModal({
 
     }, [])
 
+    const handleShare = async () => {
+        try {
+            const element = modalContentRef.current;
+
+            // Create a clone of the content
+            const clone = element.cloneNode(true);
+
+            // Style the clone
+            clone.style.padding = '2rem';
+            clone.style.background = 'white';
+            clone.style.borderRadius = '0.75rem';
+
+            // Remove OK button from clone
+            const okButton = clone.querySelector('button.ok-button');
+            if (okButton) {
+                okButton.remove();
+            }
+
+            // Remove copy buttons and adjust parent div spacing
+            const copyButtons = clone.querySelectorAll('.ml-2');
+            copyButtons.forEach(button => {
+                const parentDiv = button.closest('.flex.justify-between');
+                if (parentDiv) {
+                    button.remove();
+                    parentDiv.style.justifyContent = 'flex-end'; // Adjust alignment
+                    parentDiv.style.marginRight = '1.5rem'; // Add right margin to match web view
+                }
+            });
+
+            // Add clone to document temporarily (hidden)
+            clone.style.position = 'absolute';
+            clone.style.left = '-9999px';
+            document.body.appendChild(clone);
+
+            // Take screenshot of clone
+            const canvas = await html2canvas(clone);
+
+            // Remove clone from document
+            document.body.removeChild(clone);
+
+            // Convert canvas to blob and share
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const file = new File([blob], 'notification.png', { type: 'image/png' });
+
+            if (navigator.share) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Notification Details',
+                    text: 'Check out this notification'
+                });
+            } else {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.download = 'notification.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    };
+
     return (
         <>
             <Modal open={open}>
 
                 <canvas ref={canvasRef} className={`${operationResult == "ACCP" ? "fixed top-0 left-0" : "hidden"} -z-10`}></canvas>
 
-                <div className={`flex justify-center items-center w-full z-[1]`}>
+                <div className={`relative flex justify-center items-center w-full z-[1]`}>
 
-                    <div className="flex flex-col justify-center items-center">
+                    <button
+                        onClick={handleShare}
+                        className="absolute top-3 right-4 bg-slate-100 rounded-full p-2 shadow-lg flex justify-center items-center hover:bg-slate-200 transition-colors"
+                    >
+                        <ShareIcon width="w-[32px]" height="h-[32px]" />
+                    </button>
+
+                    <div ref={modalContentRef} className="flex flex-col justify-center items-center">
+
+                        <div className="mt-4 w-full h-[60px] flex justify-center items-center">
+                            <div className="w-[220px] h-[120px] flex justify-center items-center">
+                                <BitMercadoDigitalLogo />
+                            </div>
+                        </div>
 
                         <div className="mt-[20px] cursor-pointer z-10" onClick={(e) => {
                             if (operationResult !== "ACCP")
@@ -186,7 +266,7 @@ function NotificationModal({
 
                         <h3 className="font-semibold my-[20px]">{Title(operationResult)}</h3>
 
-                        <div className="space-y-[0.15rem] mb-[20px]">
+                        <div className="mb-[20px] space-y-[0.15rem]">
 
                             {(typeOfNotification == "INFO" || typeOfNotification == "ERROR") && refInternal &&
                                 <RefComponent refTitle="Ref Interna:" refValue={refInternal} />
@@ -205,14 +285,18 @@ function NotificationModal({
                             {typeOfNotification == "ERROR" && codigo && <DescribeComponent title="Código:" value={codigo} />}
 
 
-                            {typeOfNotification == "ERROR" && razon && <ErrorDescriptionComponent value={razon} />}
+                            {typeOfNotification == "ERROR" && razon && <ErrorDescriptionComponent showArrow={showArrow} value={razon} />}
+
+
+
 
                         </div>
+
 
                         <button
                             type="button"
                             className="text-center p-2 bg-primary  text-[whitesmoke] mb-[20px]  
-                text-sm rounded-2xl  uppercase w-[100px] h-[40px] font-light "
+                text-sm rounded-2xl  uppercase w-[100px] h-[40px] font-light ok-button"
                             onClick={(e) => {
                                 if (onClickEvent)
                                     onClickEvent(e);
