@@ -1,4 +1,4 @@
 {
-    "sypago_url": "https://pruebas.local.sypago.net:8086",
-    "sypago_callback_url": "https://pruebas.local.sypago.net"
+    "sypago_url": "https://pruebas.sypago.net:8086",
+    "sypago_callback_url": "https://pruebas.sypago.net"
 }

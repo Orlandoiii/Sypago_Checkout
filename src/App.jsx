@@ -13,17 +13,17 @@ import ConfigContextProvider from "./ui/contexts/ConfigContext";
 
 const router = createBrowserRouter([
   {
-    path: "/checkout",
+    path: "/cantv",
     element: <CheckoutPage isBlueprint={false} />,
     errorElement: <ErrorPage />
   },
   {
-    path: "/checkout/:id",
+    path: "/cantv/:id",
     element: <CheckoutPage isBlueprint={false} />,
     errorElement: <ErrorPage />
   },
   {
-    path: "/checkout/blueprint/:id",
+    path: "/cantv/blueprint/:id",
     element: <CheckoutPage isBlueprint={true} />,
     errorElement: <ErrorPage />
   },

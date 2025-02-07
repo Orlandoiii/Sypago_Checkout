@@ -1,5 +1,6 @@
 import React from 'react';
 import BackArrow from '../../core/icons/BackArrow';
+import { CantvLogoBlanco } from '../../core/logo/CantvLogo';
 
 
 function isValidURL(str) {
@@ -48,9 +49,7 @@ function SendingUserData(
             p-4 [&>*]:my-[0.65rem]  md:[&>*]:my-[1.4rem]'>
 
                 <div className="flex flex-col items-center">
-                    <h1 className="text-2xl font-bold md:text-4xl">
-                        {userName}
-                    </h1>
+                    <CantvLogoBlanco />
                     <h2 className="text-lg font-semibold mt-2 md:text-2xl">
                         {userDocument}
                     </h2>
@@ -68,7 +67,7 @@ function SendingUserData(
                 </div>
 
 
-                <div className="flex flex-col items-center justify-center  bg-main-bg-secundary text-main-bg 
+                <div className="flex flex-col items-center justify-center  bg-main-bg-secundary text-black 
                 w-[265px] h-[85px] px-5  rounded-[30px] md:w-[330px] md:h-[100px]">
                     <h2 className="text-lg md:text-xl">Total a Pagar</h2>
                     <p className="text-xl font-semibold md:text-2xl">{monto}</p>

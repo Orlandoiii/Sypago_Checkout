@@ -54,7 +54,11 @@ func main() {
 	router := gin.Default()
 	staticHandler(router)
 
-	router.POST("/request-sypago", func(c *gin.Context) {
+	router.Use(func(c *gin.Context) {
+		if !strings.Contains(c.Request.URL.Path, "request-sypago") {
+			c.Next()
+			return
+		}
 		fmt.Println("Request Sypago")
 
 		var requestBody struct {

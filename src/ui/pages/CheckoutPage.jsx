@@ -2,12 +2,10 @@ import MainLayout from '../components/Layouts/MainLayout';
 import CheckoutComponent from '../components/Checkout/CheckoutComponent';
 import { useParams } from 'react-router-dom';
 import logger from '../../logic/Logger/logger';
-import { useConfig } from '../contexts/ConfigContext';
 import { useState } from 'react';
 import LoginForm from '../components/Login/LoginForm';
 import ShopPage from '../components/Shop/ShopPage';
 import { themeConfig } from '../core/config/theme';
-import { FormatAsFloat } from '../core/input/InputBox';
 
 function CheckoutPageWithAuth({ id, isBlueprint }) {
 
@@ -28,18 +26,20 @@ function CheckoutPageWithAuth({ id, isBlueprint }) {
 
     const [isBlueprintOperation, setIsBlueprintOperation] = useState(isBlueprint);
 
-    if (activateLogin && !isAuthenticated) {
+    if ((id == null || id == "") && activateLogin && !isAuthenticated) {
         return <LoginForm onSubmit={() => setIsAuthenticated(true)} />
     }
 
-    else if (activateShop && !isPaying) {
+
+    else if ((id == null || id == "") && activateShop && !isPaying) {
         return <ShopPage onPay={(amt) => {
+
 
             const amountJson = JSON.stringify({ amount: amt })
 
             console.log("AMOUNT JSON:", amountJson)
 
-            fetch("/digitel/request-sypago", {
+            fetch("/cantv/request-sypago", {
                 method: "POST",
                 body: amountJson,
             }).then(res => {
@@ -75,14 +75,12 @@ function CheckoutPageWithAuth({ id, isBlueprint }) {
         />
     }
 
-    else if ((!activateLogin || isAuthenticated) && (!activateShop || isPaying)) {
+    else if (id != null && id != "" || (!activateLogin || isAuthenticated) && (!activateShop || isPaying)) {
         return <CheckoutComponent
             transactionId={transactionId}
             isBlueprint={isBlueprintOperation}
         />
     }
-
-
 
 }
 
@@ -94,8 +92,12 @@ function CheckoutPage({ isBlueprint }) {
 
     return (
         <MainLayout>
-            <CheckoutPageWithAuth id={id} isBlueprint={isBlueprint} />
+            <div className='w-full min-h-screen'>
+                <CheckoutPageWithAuth id={id} isBlueprint={isBlueprint} />
+            </div>
         </MainLayout>
+
+
 
     );
 }

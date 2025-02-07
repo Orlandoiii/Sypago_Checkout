@@ -71,10 +71,10 @@ export default function LoginForm({onSubmit}) {
     };
 
     return (
-        <div className="h-screen w-full bg-slate-100 flex justify-center items-center mx-auto md:p-6">
+        <div className="h-screen w-full bg-slate-200 flex justify-center items-center mx-auto md:p-6">
             <form onSubmit={handleSubmit(handleSubmitForm)} className="w-full h-full md:h-auto flex flex-col justify-center  
             md:max-w-md px-4 py-8 space-y-6 border-2 
-            border-main-bg-secundary bg-main-bg-secundary rounded-md shadow-lg ">
+            border-main-bg-secundary bg-main-bg-secundary rounded-md shadow-xl ">
                 {/* Email Field */}
                 <div>
                     <Logo></Logo>

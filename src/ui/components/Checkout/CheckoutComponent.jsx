@@ -15,6 +15,7 @@ import NotificationModal from "../../core/notifications/NotificationModal";
 import AcceptError from "../../../logic/models/AcceptError";
 import { FormatAsFloat, ParseToFloat } from "../../core/input/InputBox";
 import Logo from "../../core/logo/Logo";
+import { CantvLogoBlanco } from "../../core/logo/CantvLogo";
 
 
 const translateXeffect = {
@@ -621,7 +622,8 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                      ${!transactionState.isLoaded() || transactionState.isError ? "opacity-100" : "opacity-0"}
                      ${transactionState.isError ? "-translate-y-[280%] md:-translate-y-[250%]" : "-translate-y-1/2"}`}>
                         <div className="w-[350px] md:w-[560px] h-auto">
-                            <Logo negative={true} />
+                          
+                           <CantvLogoBlanco />
                         </div>
                     </div>
 
