@@ -12,23 +12,11 @@ import BitMercadoDigitalLogo, { EmptyLoadImage } from '../logo/BitMercadoDigital
 export const themeConfig = {
 
     colors: {
-        //mainBg: '#24262B', //Tunnal
-        mainBg: '#0A7356', //Sypago
-
-        //mainBg: '#8C0414', //Digitel
-
+        mainBg: '#94D500', //Sypago
 
         mainBgSecundary: '#F5F5F5', //Tunnal 
 
-
-
-
-        //primary: '#C10000', //Tunnal
-        //primary: '#4D2680', //Digitel
-
-
-        primary: '#0A7356', //Sypago
-
+        primary: '#94D500', //Sypago
 
         secondary: '#00BCF4', //Sypago
 
@@ -38,11 +26,8 @@ export const themeConfig = {
 
         success: '#00BCF4', //Sypago
 
-        focus: '#0A7356', //Sypago
+        focus: '#94D500', //Sypago
 
-
-
-        //focus: '#7669A9', //Digitel
     },
 
     logo: {

@@ -1,6 +1,6 @@
 import blackLogo from "../../../assets/bitmercado_digital/logo_negro.png"
 import whiteLogo from "../../../assets/bitmercado_digital/logo_blanco.png"
-
+import colorLogo from "../../../assets/bitmercado_digital/logo_color.png"
 
 export function EmptyLoadImage() {
     return <div className="flex items-center justify-center">
@@ -25,11 +25,13 @@ export function EmptyLoadImage() {
 
 function BitMercadoDigitalLogo({ mainColor = "black" }) {
 
-    const logo = mainColor === "black" ? blackLogo : whiteLogo
+    let logo = mainColor === "black" ? blackLogo : whiteLogo
+
+    if (mainColor === "color") logo = colorLogo
 
     return <>
         <div className="w-full h-full flex justify-center items-center">
-            <img width="260" height="72" src={logo}
+            <img  src={logo}
                 alt="Bit mercado digital"
                 sizes="(max-width: 200px) 100vw, 200px" />
         </div>

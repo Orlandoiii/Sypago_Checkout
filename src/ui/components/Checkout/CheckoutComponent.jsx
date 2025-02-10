@@ -15,6 +15,7 @@ import NotificationModal from "../../core/notifications/NotificationModal";
 import AcceptError from "../../../logic/models/AcceptError";
 import { FormatAsFloat, ParseToFloat } from "../../core/input/InputBox";
 import Logo from "../../core/logo/Logo";
+import BitMercadoDigitalLogo from "../../core/logo/BitMercadoDigitalLogo";
 
 
 // const productsExample = [
@@ -794,7 +795,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                      ${!transactionState.isLoaded() || transactionState.isError ? "opacity-100" : "opacity-0"}
                      ${transactionState.isError ? "-translate-y-[300%] md:-translate-y-[350%]" : "-translate-y-1/2"}`}>
                         <div className="w-[350px] md:w-[560px] h-auto">
-                            <Logo negative={true} />
+                            <BitMercadoDigitalLogo mainColor="color" />
                         </div>
                     </div>
 
@@ -838,7 +839,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                             " opacity-100" : effectTranslateTwo + " opacity-100"}`}>
 
                         <div className="hidden w-[380px] h-auto mb-8 md:block">
-                            <Logo />
+                            <BitMercadoDigitalLogo mainColor="color" />
                         </div>
 
                         <div className={`w-full `} >

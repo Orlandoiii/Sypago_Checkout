@@ -248,7 +248,7 @@ function NotificationModal({
 
                         <div className="mt-4 w-full h-[60px] flex justify-center items-center">
                             <div className="w-[220px] h-[120px] flex justify-center items-center">
-                                <BitMercadoDigitalLogo />
+                                <BitMercadoDigitalLogo mainColor="color" />
                             </div>
                         </div>
 
