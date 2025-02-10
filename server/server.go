@@ -52,6 +52,11 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
+	// router.Use(cors.New(cors.Config{
+	// 	AllowAllOrigins: true,
+	// 	AllowWildcard:   true,
+	// 	AllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	// }))
 	staticHandler(router)
 
 	router.Use(func(c *gin.Context) {
