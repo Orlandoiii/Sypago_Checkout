@@ -40,7 +40,7 @@ function SendingUserData(
 
 
         <div className="relative  h-full w-full flex flex-col justify-center items-center bg-transparent 
-        text-[whitesmoke] px-1 py-3 md:py-8  overflow-y-auto">
+        text-[black] px-1 py-3 md:py-8  overflow-y-auto">
 
             {backUrl && isValidURL(backUrl) && <a
                 className="absolute top-8 left-6  bg-main-bg-secundary rounded-xl flex justify-center 
@@ -55,9 +55,10 @@ function SendingUserData(
              [&>*]:my-[0.5rem]  md:[&>*]:my-[2rem]'>
 
                 <div className="flex flex-col items-center">
-                    <BitMercadoDigitalLogo mainColor='white' />
-                    <h3 className='text-xl text-white font-semibold'>{userDocument}</h3>
+                    <BitMercadoDigitalLogo mainColor='black' />
+                    <h3 className='text-xl text-black font-semibold'>{userDocument}</h3>
                 </div>
+
 
                 {productsIsNotEmpty &&
                     <div className="flex flex-col items-center ">
