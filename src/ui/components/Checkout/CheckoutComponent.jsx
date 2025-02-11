@@ -84,13 +84,24 @@ const notificationInitialState = {
     codigo: "",
     operationResult: "",
     typeOfNotification: "",
-    refInternal: ""
+    refInternal: "",
+
+    fechaPago: "",
+    bancoPagador: "",
+    cedulaPagador: "",
+    concepto: "",
+    leadId: ""
 }
+
+
+
+
 
 function notificationModalReducer(state, action) {
 
     const data = action.payload;
     switch (action.type) {
+
         case "notification/open": {
 
             return {
@@ -104,7 +115,13 @@ function notificationModalReducer(state, action) {
                 codigo: data?.codigo,
                 operationResult: data?.operationResult,
                 typeOfNotification: data?.typeOfNotification,
-                refInternal: data?.refInternal
+                refInternal: data?.refInternal,
+
+                fechaPago: data?.fechaPago,
+                bancoPagador: data?.bancoPagador,
+                cedulaPagador: data?.cedulaPagador,
+                concepto: data?.concepto,
+                leadId: data?.leadId
             }
         }
 
@@ -124,6 +141,13 @@ function useNotificationReducer() {
 }
 
 function getRate(bcvRates) {
+
+    if (bcvRates == null || !Array.isArray(bcvRates))
+        return 0;
+
+    if (bcvRates.length == 0)
+        return 0;
+
     for (const rate of bcvRates) {
         if (rate.code == "USD") {
             return rate.rate;
@@ -487,6 +511,8 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         }
 
 
+
+
         const data = {
             refBanco: referenciaIBp,
             refSypago: referenciaSypago,
@@ -496,13 +522,18 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             codigo: transactionStatus.rsn,
             razon: getStatusDescription(transactionStatus.rsn, transactionState.rjctCodes),
             operationResult: txSts,
-            typeOfNotification: typeOfNotification
+            typeOfNotification: typeOfNotification,
 
+            fechaPago: transactionStatus?.lastUpdateTransactionDate || '',
+            bancoPagador: transactionStatus?.receiving_user?.account?.bank_code || '',
+            cedulaPagador: transactionStatus?.receiving_user?.document_info?.number || '',
+            concepto: (transactionStatus?.concept ? transactionStatus.concept : ''),
+            leadId: (transactionStatus?.leadId ? transactionStatus.leadId : '')
         }
 
+        logger.info("Notification Data for Modal:", data);
 
         setOpenLoadModal(false);
-
         dispatchNotification({ type: "notification/open", payload: { ...data } })
     }
 
@@ -584,8 +615,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 }
             }
 
-            logger.info("RAZON:", transactionState.rjctCodes)
-
             const data = {
                 refInternal: transaction.transactionId,
                 refBanco: referenciaIBp,
@@ -596,6 +625,12 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 razon: getStatusDescription(transaction.rsn, transactionState.rjctCodes),
                 operationResult: transaction.status,
                 typeOfNotification: typeOfNotification,
+
+                fechaPago: transaction?.lastUpdateTransactionDate,
+                bancoPagador: transaction?.receiving_user?.account?.bank_code,
+                cedulaPagador: transaction?.receiving_user?.document_info?.number,
+                concepto: transaction?.concept,
+                leadId: transaction?.leadId
 
             }
 
@@ -821,6 +856,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                                     rate={getRate(transactionState.bcvRates)}
                                     backUrl={transactionState.transactionData?.notification_urls?.return_front_end_url}
                                     products={[]}
+                                    leadId={transactionState.transactionData?.leadId}
 
 
                                 />}
@@ -898,6 +934,12 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 operationResult={notificationState.operationResult}
                 typeOfNotification={notificationState.typeOfNotification}
                 refInternal={notificationState.refInternal}
+
+                fechaPago={notificationState?.fechaPago}
+                bancoPagador={notificationState?.bancoPagador}
+                cedulaPagador={notificationState?.cedulaPagador}
+                concepto={notificationState?.concepto}
+                leadId={notificationState?.leadId}
 
                 onClickEvent={() => {
                     dispatchNotification({ type: "notification/close" });

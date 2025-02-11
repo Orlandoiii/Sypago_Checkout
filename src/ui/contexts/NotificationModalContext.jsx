@@ -30,10 +30,21 @@ export default function NotificationModalContextProvider({ children }) {
 
     const [refInternal, setRefInternal] = useState("");
 
+    const [fechaPago, setFechaPago] = useState("");
+
+    const [bancoPagador, setBancoPagador] = useState("");
+
+    const [cedulaPagador, setCedulaPagador] = useState("");
+
+    const [concepto, setConcepto] = useState("");
+
     const onClickHandlerRef = useRef(null);
 
     function showNotification(refBanco, refSypago, montoCobrado,
-        montoPagado, codigo, operationResult, typeOfNotification, ref) {
+        montoPagado, codigo, operationResult, typeOfNotification, 
+        
+        
+        fechaPago, bancoPagador, cedulaPagador,concepto) {
 
         if (refSypago && refSypago !== "") {
             setRefSypago(refSypago);
@@ -61,6 +72,21 @@ export default function NotificationModalContextProvider({ children }) {
             setRefInternal(refInternal);
         }
 
+        if (fechaPago && fechaPago !== "") {
+            setFechaPago(fechaPago);
+        }
+
+        if (bancoPagador && bancoPagador !== "") {
+            setBancoPagador(bancoPagador);
+        }
+
+        if (cedulaPagador && cedulaPagador !== "") {
+            setCedulaPagador(cedulaPagador);
+        }
+
+        if (concepto && concepto !== "") {
+            setConcepto(concepto);
+        }
 
         setOpen(true);
     }
@@ -97,6 +123,10 @@ export default function NotificationModalContextProvider({ children }) {
                 refSypago={refSypago}
                 refBanco={refBanco}
                 refInternal={refInternal}
+                fechaPago={fechaPago}
+                bancoPagador={bancoPagador}
+                cedulaPagador={cedulaPagador}
+                concepto={concepto}
             />
 
         </NotificationModalContext.Provider>

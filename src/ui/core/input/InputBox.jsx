@@ -9,8 +9,8 @@ const emptyRegister = {
     ref: null,
 }
 function RemoveCharsOutOfRegex(value, regex) {
-    
-    if (regex.source === '.') 
+
+    if (regex.source === '.')
         return value;
 
     const regexCondition = `[^${regex.source.replaceAll('[', '').replaceAll(']', '').replaceAll('|', '')}]`;
@@ -162,6 +162,7 @@ export default function InputBox({
 
     icons = null,
     characterValidationPattern = null,
+    description = null,
 
 }) {
 
@@ -293,8 +294,8 @@ export default function InputBox({
                   ${errMessage && errMessage.length > 0 ?
                         (!useStrongErrColor ? "border-gray-600" : "border-error") : "border-focus"} 
                    peer-hover:opacity-100 peer-focus:opacity-100 
-                 peer-disabled/input:border-gray-300 `}></div>
-
+                 peer-disabled/input:border-gray-300 `}>
+                </div>
 
                 {icons}
                 <span
@@ -306,6 +307,15 @@ export default function InputBox({
                           ${errMessage && errMessage.length > 0 ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-5"}
                           ${!useStrongErrColor ? "text-gray-600" : "text-rose-700"}
                          `}>{errMessage}
+                </span>
+
+                <span
+                    className={`h-full w-full text-gray-700 text-ellipsis overflow-x-hidden whitespace-nowrap  
+                         pointer-events-none absolute left-0 top-[101%]   text-xs 
+                          select-none  py-0.5 px-0.5
+                            transition-all ease-in-out duration-300
+                        ${(errMessage && errMessage.length > 0) || (!description && description == null) ? "opacity-0 translate-x-0" : "opacity-100 -translate-x-0"}
+                `}>{description}
                 </span>
 
             </div>

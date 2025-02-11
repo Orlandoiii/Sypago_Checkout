@@ -31,9 +31,10 @@ function BitMercadoDigitalLogo({ mainColor = "black" }) {
 
     return <>
         <div className="w-full h-full flex justify-center items-center">
-            <img  src={logo}
+            <img className="w-full h-full" src={logo}
                 alt="Bit mercado digital"
-                sizes="(max-width: 200px) 100vw, 200px" />
+                //sizes="(max-width: 200px) 100vw, 200px" 
+                />
         </div>
     </>
 }

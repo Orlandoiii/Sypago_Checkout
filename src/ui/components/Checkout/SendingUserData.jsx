@@ -2,13 +2,14 @@ import React from 'react';
 import BackArrow from '../../core/icons/BackArrow';
 import BitMercadoDigitalLogo from '../../core/logo/BitMercadoDigitalLogo';
 import ProductList from '../../core/products/ProductList';
-
+import logger from '../../../logic/Logger/logger';
 
 function isValidURL(str) {
     try {
         new URL(str);
         return true;
     } catch (e) {
+        logger.error("ERROR EJECUTANDO:", e)
         return false;
     }
 }
@@ -16,7 +17,6 @@ function isValidURL(str) {
 function SendingUserData(
     {
         isBs = true,
-
         monto = 0,
         montoDisplay = '',
         backUrl = null,
@@ -24,17 +24,19 @@ function SendingUserData(
         products = [],
         concept = '',
         rateDisplay = '',
-        rate = 1
+        rate = 1,
+        leadId = ""
 
     }
 ) {
-
 
     const productsIsNotEmpty = products != null &&
         Array.isArray(products) &&
         products.length > 0;
 
     const montoConvertido = (isBs ? monto / rate : monto * rate).toFixed(2);
+
+    logger.log("Renderizando SendingUserData", monto, rate, montoConvertido)
 
     return (
 
@@ -52,14 +54,12 @@ function SendingUserData(
             </a>}
 
             <div className='flex h-full flex-col justify-center  items-center  
-             [&>*]:my-[0.5rem]  md:[&>*]:my-[2rem]'>
+               md:[&>*]:my-[2rem]'>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col space-y-1 items-center">
                     <BitMercadoDigitalLogo mainColor='black' />
-                    <h3 className='text-xl text-black font-semibold'>{userDocument}</h3>
+                    <h3 className='text-lg text-black font-semibold'>{userDocument}</h3>
                 </div>
-
-
                 {productsIsNotEmpty &&
                     <div className="flex flex-col items-center ">
                         <ProductList products={products} />
@@ -67,40 +67,37 @@ function SendingUserData(
                 }
 
                 {!productsIsNotEmpty && concept && concept != '' &&
-                    <div className="flex flex-col items-center ">
+                    <div className="flex flex-col items-center mt-8">
 
-                        <h2 className="text-lg font-thin md:text-xl">
+                        <h2 className="text-md font-thin md:text-xl">
                             Cobro por concepto de:
                         </h2>
-                        <h2 className="text-xl font-bold max-w-[350px] md:max-w-[75%] text-center md:text-2xl">
+                        <h2 className="text-lg font-bold max-w-[350px] md:w-full text-center md:text-xl">
                             {concept}
                         </h2>
 
                     </div>
                 }
 
-                <div className="flex flex-col items-center justify-center  
+                <div className="flex flex-col items-center justify-center mt-3
                 bg-main-bg-secundary text-main-bg gap-1
-                w-[265px] h-[130px] px-5  rounded-[30px] md:w-[330px] ">
+                w-[260px] h-[120px] px-5  rounded-[30px] md:w-[330px] ">
 
 
                     <h2 className="text-lg text-black font-semibold md:text-xl ">Monto a Pagar</h2>
 
                     <div className='flex flex-col justify-between items-center '>
-                        <div className='flex justify-between items-center'>
-                            <p className="text-xl text-black font-semibold md:text-2xl">{montoDisplay}</p>
-                            <p className='text-xl text-black font-semibold md:text-2xl ml-2'>{isBs ? 'Bs' : '$'}</p>
+                        <div className='flex justify-between items-center space-x-2'>
+                            <p className='text-lg text-black font-semibold md:text-xl'>{isBs ? 'Bs ' : '$ '}</p>
+                            <p className="text-lg text-black font-semibold md:text-xl">{montoDisplay}</p>
+                            <p className='text-black text-sm'>{`(${!isBs ? 'Bs' : '$'} ${montoConvertido})`}</p>
                         </div>
-                        <div className='text-md text-black flex justify-center items-center'>
-                            <p>Ref en: {isBs ? ' $ ' + ` ${montoConvertido} ` : ' Bs ' + ` ${montoConvertido} `}</p>
-                        </div>
+
                     </div>
 
 
 
-
-
-                    <h3 className="text-sm text-black   md:text-lg">Tasa BCV: <span className='font-semibold'>{rateDisplay}</span></h3>
+                    <h3 className="text-sm text-black   md:text-md">Tasa BCV: <span className='font-semibold'>{rateDisplay}</span></h3>
                 </div>
             </div>
 

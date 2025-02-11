@@ -14,7 +14,7 @@ function ChipOptions({ options, selectedOption, onSelectedOption }) {
                     px-[9px]  flex items-center justify-center text-sm  mr-3 
                     transition-colors duration-300 drop-shadow-xl 
                     shadow-slate-300 w-[100px] h-[30px]
-                    ${o == selectedOption ? "bg-primary text-white" : "bg-gray-300 text-gray-500"}
+                    ${o == selectedOption ? "bg-primary text-black font-semibold" : "bg-gray-300 text-gray-500"}
                     `}
 
                     onClick={(e) => {

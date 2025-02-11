@@ -8,6 +8,7 @@ import ConfettiGenerator from "confetti-js";
 import ShareIcon from "../icons/ShareIcon";
 import html2canvas from 'html2canvas';
 import BitMercadoDigitalLogo from "../logo/BitMercadoDigitalLogo";
+import logger from "../../../logic/Logger/logger";
 
 function Title(operationResult) {
     switch (operationResult) {
@@ -30,7 +31,7 @@ function DescribeComponent({ title = '', value = '' }) {
     const shortValue = value?.length > 16 ? value.substring(0, 15) + "..." : value;
 
     return (
-        <div className="w-[275px] flex flex-row justify-between">
+        <div className="w-[350px] flex flex-row justify-between">
             <p className=" text-slate-900 font-medium">{title}</p>
             <p className="text-black font-light mr-6">{shortValue}</p>
         </div>
@@ -40,7 +41,7 @@ function DescribeComponent({ title = '', value = '' }) {
 
 function RefComponent({ refTitle = '', refValue = '' }) {
 
-    return (<div className=" w-[275px] flex flex-row justify-between ">
+    return (<div className=" w-[350px] flex flex-row justify-between ">
         <p className="text-slate-900 font-medium self-start">{refTitle}</p>
         <div className="flex justify-between">
             <p className="text-black font-light ">{refValue}</p>
@@ -68,7 +69,6 @@ function ErrorDescriptionComponent({ value = '', showArrow = true }) {
         <div className={`relative w-[275px] flex  ${showDetail ? "flex-col" : "flex-row"} justify-between transition-all duration-500`} >
 
             <p className={`text-[#4E5463] ${showDetail ? "translate-x-[115px]" : ""} transition-all duration-500`}>{title}</p>
-
 
             <div className={`flex items-center transition-all duration-500 `}>
 
@@ -103,6 +103,13 @@ function ErrorDescriptionComponent({ value = '', showArrow = true }) {
     )
 }
 
+function FormatDate(date) {
+    if (!date) return '';
+    const day = new Date(date).getDate().toString().padStart(2, '0');
+    const month = (new Date(date).getMonth() + 1).toString().padStart(2, '0');
+    const year = new Date(date).getFullYear();
+    return `${day}-${month}-${year}`;
+}
 
 function NotificationModal({
     open,
@@ -115,7 +122,12 @@ function NotificationModal({
     razon = null,
     codigo = null,
     operationResult = "PEND",
-    typeOfNotification = "SUCCESS"
+    typeOfNotification = "SUCCESS",
+    fechaPago = null,
+    bancoPagador = null,
+    cedulaPagador = null,
+    concepto = null,
+    leadId = null
 }) {
 
 
@@ -229,6 +241,27 @@ function NotificationModal({
         }
     };
 
+    logger.info("Notification Modal:", {
+        open,
+        onClickEvent,
+        refBanco,
+        refSypago,
+        refInternal,
+        montoCobrado,
+        montoPagado,
+        razon,
+        codigo,
+        operationResult,
+        typeOfNotification,
+        fechaPago,
+        bancoPagador,
+        cedulaPagador,
+        concepto,
+        leadId
+    })
+
+
+
     return (
         <>
             <Modal open={open}>
@@ -247,7 +280,7 @@ function NotificationModal({
                     <div ref={modalContentRef} className="flex flex-col justify-center items-center">
 
                         <div className="mt-4 w-full h-[60px] flex justify-center items-center">
-                            <div className="w-[220px] h-[120px] flex justify-center items-center">
+                            <div className="w-[220px] h-[80px] flex justify-center items-center">
                                 <BitMercadoDigitalLogo mainColor="color" />
                             </div>
                         </div>
@@ -277,17 +310,22 @@ function NotificationModal({
                             {refBanco && <RefComponent refTitle="Ref. Banco:" refValue={refBanco} />}
 
                             {operationResult == "ACCP" && montoCobrado &&
-                                <DescribeComponent title={amtsEquals ? "Monto:" : "Monto:"} value={montoCobrado} />}
+                                <DescribeComponent title={amtsEquals ? "Monto:" : "Monto:"} value={`Bs. ${montoCobrado}`} />}
 
-                            {/* {!amtsEquals && operationResult == "ACCP"
-                                && montoPagado && <DescribeComponent title="Monto pagado:" value={montoPagado} />} */}
+                         
+                            {fechaPago && <DescribeComponent title="Fecha de pago:" value={FormatDate(fechaPago)} />}
+
+                            {bancoPagador && <DescribeComponent title="Banco pagador:" value={bancoPagador} />}
+
+                            {cedulaPagador && <DescribeComponent title="Cédula pagador:" value={cedulaPagador} />}
+
+                            {leadId && <DescribeComponent title="ID:" value={`#${leadId}`} />}
 
                             {typeOfNotification == "ERROR" && codigo && <DescribeComponent title="Código:" value={codigo} />}
 
-
                             {typeOfNotification == "ERROR" && razon && <ErrorDescriptionComponent showArrow={showArrow} value={razon} />}
 
-
+                            {concepto && <DescribeComponent title="Concepto:" value={concepto} />}
 
 
                         </div>

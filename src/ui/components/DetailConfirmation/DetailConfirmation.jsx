@@ -17,7 +17,7 @@ function DetailField({ title, data, withCopyButton = false }) {
         <div className="w-full flex justify-between items-center text-sm">
             <h3 className='w-[45%] font-medium'>{`${title}:`}</h3>
             <div className={`flex justify-between items-center space-x-2 w-[55%]`}>
-                <p className='overflow-hidden text-ellipsis whitespace-nowrap text-primary font-medium text-sm md:text-md'>{data}</p>
+                <p className='overflow-hidden text-ellipsis whitespace-nowrap text-black font-semibold text-sm md:text-md'>{data}</p>
                 {withCopyButton && <div>
                     <CopyButton />
                 </div>}

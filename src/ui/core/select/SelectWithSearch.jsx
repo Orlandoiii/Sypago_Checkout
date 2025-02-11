@@ -19,7 +19,8 @@ export default function SelectWithSearch({
     openUp = false,
     disabled = false,
     wacth = null,
-    characterValidationPattern
+    characterValidationPattern,
+    description = null
 }) {
     const [open, setOpen] = useState(false)
 
@@ -161,7 +162,7 @@ export default function SelectWithSearch({
                 useDotLabel={useDotLabel}
                 errMessage={errMessage}
                 turnOffAutoCompleted={true}
-
+                description={description}
                 watch={wacth}
                 useStrongErrColor={useStrongErrColor}
                 inputRef={inputRef}

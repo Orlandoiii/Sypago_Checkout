@@ -1,4 +1,4 @@
 {
-    "sypago_url": "http://192.168.100.132:5253",
-    "sypago_callback_url": "http://192.168.100.132:5253"
+    "sypago_url": "https://pruebas.sypago.net",
+    "sypago_callback_url": "https://pruebas.sypago.net"
 }
