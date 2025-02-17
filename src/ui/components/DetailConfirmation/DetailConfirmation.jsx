@@ -14,10 +14,10 @@ function DetailTitle({ open, onClick, title }) {
 
 function DetailField({ title, data, withCopyButton = false }) {
     return (
-        <div className="w-full flex justify-between items-center text-sm">
+        <div className="w-full flex justify-between items-start text-sm">
             <h3 className='w-[45%] font-medium'>{`${title}:`}</h3>
             <div className={`flex justify-between items-center space-x-2 w-[55%]`}>
-                <p className='overflow-hidden text-ellipsis whitespace-nowrap text-black font-semibold text-sm md:text-md'>{data}</p>
+                <p className='overflow-hidden  text-black font-semibold text-sm md:text-md'>{data}</p>
                 {withCopyButton && <div>
                     <CopyButton />
                 </div>}
@@ -45,7 +45,7 @@ function DetailData({ title, fields }) {
 function DetailConfirmation({ open, data, onConfirm, onBack }) {
     return (
         <Modal open={open} showX={true} onClose={onBack}>
-            <h2 className='w-full   absolute left-1/2 transform -translate-x-1/2 top-0 py-2   text-xl 
+            <h2 className='w-full mt-3  absolute left-1/2 transform -translate-x-1/2 top-0 py-2   text-xl 
            text-black font-medium   text-center'>Confirmar Datos</h2>
             <div className='w-full h-full mt-12 mb-2'>
                 <div className='w-full px-6 space-y-4  py-2.5'>

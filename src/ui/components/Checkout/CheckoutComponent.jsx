@@ -16,6 +16,10 @@ import AcceptError from "../../../logic/models/AcceptError";
 import { FormatAsFloat, ParseToFloat } from "../../core/input/InputBox";
 import Logo from "../../core/logo/Logo";
 import BitMercadoDigitalLogo from "../../core/logo/BitMercadoDigitalLogo";
+import FondoWebBitmercado from "../../../assets/Fondo_web_bitmercado.png";
+import { set } from "react-hook-form";
+// import { backgroundPosition } from "html2canvas/dist/types/css/property-descriptors/background-position";
+// import { display } from "html2canvas/dist/types/css/property-descriptors/display";
 
 
 // const productsExample = [
@@ -233,6 +237,9 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
     const [receptSubmitData, setReceptSubmitData] = useState({});
 
+    const [banks, setBanks] = useState([]);
+    const [banksLoaded, setBanksLoaded] = useState(false);
+
 
     const { notificationState, dispatchNotification } = useNotificationReducer();
 
@@ -335,7 +342,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             emisorObj.section_data.push(
                 {
                     name: "Monto Cobrado",
-                    data: FormatAsFloat(chargeAmout) + " Bs"
+                    data:  "Bs " + FormatAsFloat(chargeAmout)
                 })
             receptObj.section_data.push({
                 name: "Monto Pagado",
@@ -349,7 +356,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             emisorObj.section_data.push(
                 {
                     name: "Monto",
-                    data: FormatAsFloat(chargeAmout) + " Bs"
+                    data: "Bs " + FormatAsFloat(chargeAmout) 
                 })
         }
 
@@ -429,7 +436,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 timeoutPayRef.current = setTimeout(() => {
                     failPayProcess(`Lo sentimos pero tenemos incovenientes 
                         por favor verifique con su banco si los fondos han sido debitados Ref:${transactionId} y recargue la pagina`)
-                }, 120000)
+                }, 12000)
 
 
                 getTransactionInterval.current = setInterval(async () => {
@@ -525,7 +532,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             typeOfNotification: typeOfNotification,
 
             fechaPago: transactionStatus?.lastUpdateTransactionDate || '',
-            bancoPagador: transactionStatus?.receiving_user?.account?.bank_code || '',
+            bancoPagador: getBankLargeName(transactionStatus?.receiving_user?.account?.bank_code, transactionState.banks)  || '',
             cedulaPagador: transactionStatus?.receiving_user?.document_info?.number || '',
             concepto: (transactionStatus?.concept ? transactionStatus.concept : ''),
             leadId: (transactionStatus?.leadId ? transactionStatus.leadId : '')
@@ -565,6 +572,16 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
             processTransaction(transactionStatus)
 
     }
+
+    function getBankLargeName(bankCode, banks) {
+        // Option 1: Using find() (more efficient for single lookups)
+        const bank = banks.find(bank => bank.code === bankCode);
+        if (bank) {
+          return `${bank.code} - ${bank.name}`;
+        } else {
+          return ""; // Or undefined, or throw an error, depending on how you want to handle missing banks
+        }
+      }
 
 
     useEffect(() => {
@@ -627,7 +644,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 typeOfNotification: typeOfNotification,
 
                 fechaPago: transaction?.lastUpdateTransactionDate,
-                bancoPagador: transaction?.receiving_user?.account?.bank_code,
+                bancoPagador: getBankLargeName(transaction?.receiving_user?.account?.bank_code, transactionState.banks) ,
                 cedulaPagador: transaction?.receiving_user?.document_info?.number,
                 concepto: transaction?.concept,
                 leadId: transaction?.leadId
@@ -683,29 +700,58 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                         })
 
 
-                    SignalRService.GetAllBanks()
-                        .then((b) => {
-                            logger.info("RESULT Banks", b);
+                        const fetchBanks = async () => {
+                                try{
 
-                            if (b == null) {
-                                logger.error(b.err);
-                                throw new Error(b);
-                            }
+                                    const b = await SignalRService.GetAllBanks();
+                                setBanks(b);
+                                setBanksLoaded(true);
+                                dispatch({ type: "transaction/setbanks", payload: { banks: b } });
 
-
-                            dispatch({ type: "transaction/setbanks", payload: { banks: b } })
-                        }).catch(err => {
-
-                            dispatch({
-                                type: "transaction/seterror",
-                                payload: {
-                                    error: "No se pudo obetener los codigos de Banco",
-                                    errorCode: err.message,
-                                    transactionData: {},
-                                    transactionDataIsLoaded: false,
+                                }catch(error){
+                                    throw new Error(error);
+                                    dispatch({
+                                        type: "transaction/seterror",
+                                        payload: {
+                                            error: "No se pudo obetener los codigos de Banco",
+                                            errorCode: err.message,
+                                            transactionData: {},
+                                            transactionDataIsLoaded: false,
+                                        }
+                                    });
                                 }
-                            })
-                        })
+                           
+                        }
+                        if(!banksLoaded){
+                            fetchBanks();
+                        }
+
+                    // if(banks === undefined || banks === null || banks.length === 0){
+                    //     SignalRService.GetAllBanks()
+                    //     .then((b) => {
+                    //         logger.info("RESULT Banks", b);
+
+                    //         if (b == null) {
+                    //             logger.error(b.err);
+                    //             throw new Error(b);
+                    //         }
+
+
+                    //         dispatch({ type: "transaction/setbanks", payload: { banks: b } })
+                    //     }).catch(err => {
+
+                    //         dispatch({
+                    //             type: "transaction/seterror",
+                    //             payload: {
+                    //                 error: "No se pudo obetener los codigos de Banco",
+                    //                 errorCode: err.message,
+                    //                 transactionData: {},
+                    //                 transactionDataIsLoaded: false,
+                    //             }
+                    //         })
+                    //     })
+                    // }
+                    
                     SignalRService.GetTransaction(transactionId, isBlueprint)
                         .then((t) => {
                             logger.info("RESULT Transaction", t);
@@ -821,8 +867,15 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         <>
 
             <div className='bg-transparent w-full h-screen flex justify-center items-center rounded-md shadow-md'>
+                
 
-                <main className='relative bg-main-bg flex flex-col  md:flex-row w-full h-full max-w-[1920px] overflow-x-hidden overflow-y-auto'>
+                <main   style={{backgroundImage: `url(${FondoWebBitmercado})`,
+                                        backgroundPosition: 'center', // Center the image
+                                        backgroundSize: 'cover',     // Contain the image within the div
+                                        backgroundRepeat: 'no-repeat', // Prevent image tiling
+                                        width: '100%',
+                                    }}
+                        className='relative bg-main-bg flex flex-col  md:flex-row w-full h-full max-w-[1920px] overflow-x-hidden overflow-y-auto'>
 
 
                     <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 
@@ -868,13 +921,13 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                     </section>
 
-                    <section className={`w-full h-full md:w-[50%] flex 
+                    <section className={`w-full h-full md:w-[50%] drop-shadow-lg flex 
                 flex-col justify-center items-center   ${transactionState.isError ? "hidden" : "block"}
                 bg-main-bg-secundary py-8 rounded-t-[1.75rem] md:rounded-none md:rounded-l-[3.5rem] transition-all ease-in-out  duration-700 
                             ${transactionState.isLoaded() && !transactionState.isError ? visebleTranslateEffect +
                             " opacity-100" : effectTranslateTwo + " opacity-100"}`}>
 
-                        <div className="hidden w-[380px] h-auto mb-8 md:block">
+                        <div className="hidden w-[300px] h-auto mb-8 md:block">
                             <BitMercadoDigitalLogo mainColor="color" />
                         </div>
 

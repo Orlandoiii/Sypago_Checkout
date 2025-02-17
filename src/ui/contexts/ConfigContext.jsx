@@ -17,7 +17,7 @@ async function LoadConfig() {
 
     let configRequest = await fetch(import.meta.env.BASE_URL + '/config.json');
 
-    //let configRequest = await fetch("http://192.168.100.132:5174" + '/config.json');
+    // let configRequest = await fetch("http://172.16.0.4:5173" + '/config.json');
 
     logger.info("Config Request:", configRequest);
 

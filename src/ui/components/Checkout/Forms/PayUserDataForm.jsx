@@ -228,7 +228,7 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
     }, [amt])
 
     return (
-        <form className="bg-transparent px-1.5 w-full h-auto max-w-[360px] space-y-[1.25rem] mx-auto md:max-w-[440px] "
+        <form className="bg-transparent px-1.5 w-full h-auto max-w-[360px] space-y-8 mx-auto md:max-w-[440px] "
             noValidate
             onSubmit={
                 handleSubmit((data) => {
@@ -288,7 +288,7 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
                 })}>
 
             <h1 className='text-xl  font-bold'>Datos del Pagador</h1>
-            <p className='text-md text-black f md:text-lg'>Ingrese sus datos para realizar la compra</p>
+            <p className='text-md text-main-bg font-bold md:text-lg'>Ingrese sus datos para realizar la compra</p>
             <SelectWithSearch
                 value={bank}
                 onChange={setBank}
@@ -297,10 +297,10 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
                 options={showBanks}
                 onError={setBankErr}
                 useStrongErrColor={isSubmitted} 
-                description={"Banco desde el que se realiza el pago"}
+                description={"Banco desde el que se realiza el pago."}
                 />
 
-            <div className=''>
+            <div className='pt-1'>
                 <ChipSelector selectedOption={phoneAccountSelector} onSelectedOption={(opt) => {
 
                     if (opt != phoneAccountSelector) {
@@ -328,7 +328,7 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
                 watch={watch}
                 inputMode='tel'
                 characterValidationPattern={regexPatternForNumbers}
-                description={"Teléfono asociado a la cuenta del pagador"}
+                description={"Teléfono asociado a la cuenta del pagador."}
 
             />}
 
@@ -344,7 +344,7 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
                 watch={watch}
                 inputMode='numeric'
                 characterValidationPattern={regexPatternForNumbers}
-                description={"Nro de Cuenta asociada al Banco"}
+                description={"Número de cuenta asociada al banco."}
 
             />}
 
@@ -377,7 +377,7 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
                     watch={watch}
                     inputMode='numeric'
                     characterValidationPattern={regexPatternForNumbers}
-                    description={"Nro de Documento asociado a la cuenta"}
+                    description={"Número de documento de identidad asociado a la cuenta."}
 
 
                 />
@@ -400,7 +400,7 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
 
                 />}
 
-            <div className='mx-auto px-4 md:px-8 space-y-2 w-full'>
+            <div className='mx-auto pt-6 px-4 md:px-8 space-y-2 w-full'>
                 <button className="w-full bg-primary  mx-auto text-black px-2 md:h-[75px] 
                     py-3 rounded-md shadow-md text-2xl transition-all ease-in-out hover:bg-secundary hover:scale-105  "
                     type="submit">Pagar</button>

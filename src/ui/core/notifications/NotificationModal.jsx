@@ -28,12 +28,12 @@ function Title(operationResult) {
 function DescribeComponent({ title = '', value = '' }) {
 
 
-    const shortValue = value?.length > 16 ? value.substring(0, 15) + "..." : value;
+    //const shortValue = value?.length > 16 ? value.substring(0, 15) + "..." : value;
 
     return (
         <div className="w-[350px] flex flex-row justify-between">
-            <p className=" text-slate-900 font-medium">{title}</p>
-            <p className="text-black font-light mr-6">{shortValue}</p>
+            <div className=" text-slate-900 font-medium w-[40%]">{title}</div>
+            <div className="text-black font-light mr-6 text-right w-[70%]">{value}</div>
         </div>
     )
 }
@@ -41,7 +41,8 @@ function DescribeComponent({ title = '', value = '' }) {
 
 function RefComponent({ refTitle = '', refValue = '' }) {
 
-    return (<div className=" w-[350px] flex flex-row justify-between ">
+    return (
+    <div className=" w-[350px] flex flex-row justify-between ">
         <p className="text-slate-900 font-medium self-start">{refTitle}</p>
         <div className="flex justify-between">
             <p className="text-black font-light ">{refValue}</p>
@@ -49,7 +50,8 @@ function RefComponent({ refTitle = '', refValue = '' }) {
                 <CopyButton textToCopy={refValue} />
             </div>
         </div>
-    </div>)
+    </div>
+    )
 
 }
 
@@ -108,7 +110,16 @@ function FormatDate(date) {
     const day = new Date(date).getDate().toString().padStart(2, '0');
     const month = (new Date(date).getMonth() + 1).toString().padStart(2, '0');
     const year = new Date(date).getFullYear();
-    return `${day}-${month}-${year}`;
+    // Get hours in 12-hour format
+    let hours = new Date(date).getHours();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12
+    
+    // Get minutes
+    const minutes = new Date(date).getMinutes().toString().padStart(2, '0');
+    
+    return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
 }
 
 function NotificationModal({
@@ -125,6 +136,7 @@ function NotificationModal({
     typeOfNotification = "SUCCESS",
     fechaPago = null,
     bancoPagador = null,
+    accountNumber = null,
     cedulaPagador = null,
     concepto = null,
     leadId = null
@@ -221,8 +233,19 @@ function NotificationModal({
 
             // Convert canvas to blob and share
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-            const file = new File([blob], 'notification.png', { type: 'image/png' });
+            // const imageToShare = canvas.toDataURL('image/png');
+            // const blob = await (await fetch(imageToShare)).blob();
+            const file = new File([blob], 'notification.png', { type: blob.type });
+            
+            // if(navigator.share){
+            //     await navigator.share({
+            //         title: 'Detalle de operacion',
+            //         files: [file]
+            //     });
+            // }else{
 
+            // }
+            
             if (navigator.share) {
                 await navigator.share({
                     files: [file],
@@ -268,14 +291,14 @@ function NotificationModal({
 
                 <canvas ref={canvasRef} className={`${operationResult == "ACCP" ? "fixed top-0 left-0" : "hidden"} -z-10`}></canvas>
 
-                <div className={`relative flex justify-center items-center w-full z-[1]`}>
+                <div className={`relative flex justify-center items-center w-full z-[1] pt-8`}>
 
-                    <button
+                    {/* <button
                         onClick={handleShare}
-                        className="absolute top-3 right-4 bg-slate-100 rounded-full p-2 shadow-lg flex justify-center items-center hover:bg-slate-200 transition-colors"
+                        className="absolute top-4 right-4 bg-slate-100 rounded-full p-2 shadow-lg flex justify-center items-center hover:bg-slate-200 transition-colors"
                     >
                         <ShareIcon width="w-[32px]" height="h-[32px]" />
-                    </button>
+                    </button> */}
 
                     <div ref={modalContentRef} className="flex flex-col justify-center items-center">
 
@@ -288,7 +311,6 @@ function NotificationModal({
                         <div className="mt-[20px] cursor-pointer z-10" onClick={(e) => {
                             if (operationResult !== "ACCP")
                                 return;
-
                             if (confettiActive)
                                 turnOffConfetti();
                             else
@@ -301,31 +323,36 @@ function NotificationModal({
 
                         <div className="mb-[20px] space-y-[0.15rem]">
 
+                            {concepto && <DescribeComponent title="Concepto:" value={concepto} />}
+
+                            {operationResult == "ACCP" && montoCobrado &&
+                                <DescribeComponent title={amtsEquals ? "Monto:" : "Monto:"} value={`Bs. ${montoCobrado}`} />}
+                            
+                            {fechaPago && <DescribeComponent title="Fecha de pago:" value={FormatDate(fechaPago)} />}
+                            
+                            {bancoPagador && <DescribeComponent title="Banco pagador:" value={bancoPagador} />}
+
+                            {accountNumber && <DescribeComponent title="Cuenta o Número pagador:" value={accountNumber} />}
+
+                            {cedulaPagador && <DescribeComponent title="Cédula pagador:" value={cedulaPagador} />}
+                            
                             {(typeOfNotification == "INFO" || typeOfNotification == "ERROR") && refInternal &&
                                 <RefComponent refTitle="Ref Interna:" refValue={refInternal} />
                             }
 
-                            {refSypago && <RefComponent refTitle="Ref. SyPago:" refValue={refSypago} />}
-
                             {refBanco && <RefComponent refTitle="Ref. Banco:" refValue={refBanco} />}
 
-                            {operationResult == "ACCP" && montoCobrado &&
-                                <DescribeComponent title={amtsEquals ? "Monto:" : "Monto:"} value={`Bs. ${montoCobrado}`} />}
-
-                         
-                            {fechaPago && <DescribeComponent title="Fecha de pago:" value={FormatDate(fechaPago)} />}
-
-                            {bancoPagador && <DescribeComponent title="Banco pagador:" value={bancoPagador} />}
-
-                            {cedulaPagador && <DescribeComponent title="Cédula pagador:" value={cedulaPagador} />}
+                            {refSypago && <RefComponent refTitle="Ref. SyPago:" refValue={refSypago} />}
 
                             {leadId && <DescribeComponent title="ID:" value={`#${leadId}`} />}
 
                             {typeOfNotification == "ERROR" && codigo && <DescribeComponent title="Código:" value={codigo} />}
 
-                            {typeOfNotification == "ERROR" && razon && <ErrorDescriptionComponent showArrow={showArrow} value={razon} />}
+                            {typeOfNotification == "ERROR" && codigo && <DescribeComponent title="Razón:" value={razon} />}
 
-                            {concepto && <DescribeComponent title="Concepto:" value={concepto} />}
+                            {/* {typeOfNotification == "ERROR" && razon && <ErrorDescriptionComponent showArrow={showArrow} value={razon} />} */}
+
+                            
 
 
                         </div>
