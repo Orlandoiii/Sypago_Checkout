@@ -32,8 +32,8 @@ function DescribeComponent({ title = '', value = '' }) {
 
     return (
         <div className="w-[350px] flex flex-row justify-between">
-            <div className=" text-slate-900 font-medium w-[40%]">{title}</div>
-            <div className="text-black font-light mr-6 text-right w-[70%]">{value}</div>
+            <div className=" text-slate-900 font-bold w-[40%] text-sm md:text-base">{title}</div>
+            <div className="text-black font-light mr-6 text-right w-[60%] text-sm md:text-base">{value}</div>
         </div>
     )
 }
@@ -43,9 +43,9 @@ function RefComponent({ refTitle = '', refValue = '' }) {
 
     return (
     <div className=" w-[350px] flex flex-row justify-between ">
-        <p className="text-slate-900 font-medium self-start">{refTitle}</p>
+        <p className="text-slate-900 font-bold self-start text-sm md:text-base">{refTitle}</p>
         <div className="flex justify-between">
-            <p className="text-black font-light ">{refValue}</p>
+            <p className="text-black font-light text-sm md:text-base">{refValue}</p>
             <div className="ml-2 flex justify-center items-center">
                 <CopyButton textToCopy={refValue} />
             </div>

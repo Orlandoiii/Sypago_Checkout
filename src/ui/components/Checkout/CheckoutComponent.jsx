@@ -866,7 +866,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
     return (
         <>
 
-            <div className='bg-transparent w-full h-screen flex justify-center items-center rounded-md shadow-md'>
+            <div className='bg-transparent w-full h-full md:h-screen flex justify-center items-center rounded-md shadow-md'>
                 
 
                 <main   style={{backgroundImage: `url(${FondoWebBitmercado})`,

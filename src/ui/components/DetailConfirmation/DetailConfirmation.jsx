@@ -7,7 +7,7 @@ import StepButton from '../../core/buttons/StepButton';
 function DetailTitle({ open, onClick, title }) {
     return (
         <button className="w-full py-1 px-1" onClick={onClick}>
-            <h4 className="text-left text-md font-medium text-black ">{title}</h4>
+            <h4 className="text-left text-md font-bold text-black">{title}</h4>
         </button>
     )
 }
