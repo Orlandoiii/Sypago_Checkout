@@ -191,7 +191,7 @@ function NotificationModal({
 
     }, [])
 
-    // Helper to create a canvas image for sharing
+    // Helper to create a canvas image for sharing that mimics the modal's style
     const createNotificationShareImage = () => {
         const canvas = document.createElement('canvas');
         const width = 400;
@@ -200,54 +200,103 @@ function NotificationModal({
         canvas.height = height;
         const ctx = canvas.getContext('2d');
     
-        // Fill background with white
+        // Draw white background
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, width, height);
     
-        // Draw header text using the Title() function
-        ctx.fillStyle = 'black';
-        ctx.font = 'bold 24px Arial';
+        // --- Top Logo (simulated) ---
         ctx.textAlign = 'center';
-        ctx.fillText(Title(operationResult), width / 2, 40);
+        ctx.font = 'bold 18px Arial';
+        ctx.fillStyle = '#000000';
+        // Simulate BitMercadoDigitalLogo with text
+        ctx.fillText('BitMercado Digital', width / 2, 30);
     
-        // Set up detail text properties
-        ctx.textAlign = 'left';
-        ctx.font = '16px Arial';
-        let y = 80;
-        const lineHeight = 30;
+        // --- Notification Icon (simulated as a colored circle) ---
+        // Determine the icon's color based on the notification type
+        let iconColor = '#0065BB'; // default blue
+        if (typeOfNotification === "SUCCESS") {
+            iconColor = '#22c55e'; // green
+        } else if (typeOfNotification === "ERROR") {
+            iconColor = '#ef4444'; // red
+        } else if (typeOfNotification === "INFO") {
+            iconColor = '#3b82f6'; // blue
+        } else if (typeOfNotification === "WARNING") {
+            iconColor = '#facc15'; // yellow
+        }
+        ctx.fillStyle = iconColor;
+        ctx.beginPath();
+        // Draw a circle to represent the notification icon
+        ctx.arc(width / 2, 80, 35, 0, Math.PI * 2, true);
+        ctx.fill();
+    
+        // --- Notification Title ---
+        ctx.textAlign = 'center';
+        ctx.font = '600 20px Arial';
+        ctx.fillStyle = '#0F172A';
+        ctx.fillText(Title(operationResult), width / 2, 130);
+    
+        // --- Data Details (simulating DescribeComponent rows) ---
         const leftMargin = 20;
+        const rightMargin = 20;
+        let y = 160;
+        const lineHeight = 28;
     
-        // Helper to draw a detail row
-        const drawRow = (label, value) => {
-            ctx.fillText(`${label} ${value}`, leftMargin, y);
+        // Helper to draw a row with label (left, bold, slate color) and value (right, light)
+        const drawDataRow = (label, value) => {
+            // Draw Label
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#1e293b'; // approximating text-slate-900
+            ctx.fillText(label, leftMargin, y);
+            // Draw Value
+            ctx.textAlign = 'right';
+            ctx.font = 'normal 16px Arial';
+            ctx.fillStyle = '#000000';
+            ctx.fillText(value, width - rightMargin, y);
             y += lineHeight;
         };
     
         if (concepto) {
-            drawRow('Concepto:', concepto);
+            drawDataRow('Concepto:', concepto);
         }
         if (operationResult === "ACCP" && montoCobrado) {
-            drawRow('Monto:', `Bs. ${montoCobrado}`);
+            drawDataRow('Monto:', `Bs. ${montoCobrado}`);
         }
         if (fechaPago) {
-            drawRow('Fecha de pago:', FormatDate(fechaPago));
+            drawDataRow('Fecha de pago:', FormatDate(fechaPago));
         }
         if (bancoPagador) {
-            drawRow('Banco pagador:', bancoPagador);
+            drawDataRow('Banco pagador:', bancoPagador);
         }
         if (accountNumber) {
-            drawRow('Cuenta:', accountNumber);
+            drawDataRow('Cuenta:', accountNumber);
         }
         if (cedulaPagador) {
-            drawRow('Cédula:', cedulaPagador);
+            drawDataRow('Cédula:', cedulaPagador);
         }
-    
-        // Additional detail rows can be added here if needed.
+        if (refInternal) {
+            drawDataRow('Ref Interna:', refInternal);
+        }
+        if (refBanco) {
+            drawDataRow('Ref. Banco:', refBanco);
+        }
+        if (refSypago) {
+            drawDataRow('Ref. SyPago:', refSypago);
+        }
+        if (leadId) {
+            drawDataRow('ID:', `#${leadId}`);
+        }
+        if (typeOfNotification === "ERROR" && codigo) {
+            drawDataRow('Código:', codigo);
+        }
+        if (typeOfNotification === "ERROR" && razon) {
+            drawDataRow('Razón:', razon);
+        }
     
         return canvas;
     };
     
-    // Updated share handler that builds the share image directly
+    // Updated share handler that builds the share image directly from the canvas
     const handleShare = async () => {
         try {
             // Create the shareable canvas image
@@ -264,7 +313,7 @@ function NotificationModal({
                 });
                 console.log("Share successful");
             } else {
-                // Fallback for devices that don't support navigator.share
+                // Fallback: download the image
                 console.log("Fallback: downloading image");
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
