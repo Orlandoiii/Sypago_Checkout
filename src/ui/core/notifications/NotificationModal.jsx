@@ -119,7 +119,7 @@ function FormatDate(date) {
     // Get minutes
     const minutes = new Date(date).getMinutes().toString().padStart(2, '0');
     
-    return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
+    return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
 }
 
 function NotificationModal({
@@ -194,76 +194,68 @@ function NotificationModal({
     const handleShare = async () => {
         try {
             const element = modalContentRef.current;
-
-            // Create a clone of the content
+    
+            // Clone the modal content to create a clean screenshot
             const clone = element.cloneNode(true);
-
-            // Style the clone
             clone.style.padding = '2rem';
             clone.style.background = 'white';
             clone.style.borderRadius = '0.75rem';
-
-            // Remove OK button from clone
+    
+            // Remove the OK button from the clone
             const okButton = clone.querySelector('button.ok-button');
             if (okButton) {
                 okButton.remove();
             }
-
-            // Remove copy buttons and adjust parent div spacing
+    
+            // Remove copy buttons and adjust spacing
             const copyButtons = clone.querySelectorAll('.ml-2');
             copyButtons.forEach(button => {
                 const parentDiv = button.closest('.flex.justify-between');
                 if (parentDiv) {
                     button.remove();
-                    parentDiv.style.justifyContent = 'flex-end'; // Adjust alignment
-                    parentDiv.style.marginRight = '1.5rem'; // Add right margin to match web view
+                    parentDiv.style.justifyContent = 'flex-end';
+                    parentDiv.style.marginRight = '1.5rem';
                 }
             });
-
-            // Add clone to document temporarily (hidden)
+    
+            // Append the clone to the document (off-screen)
             clone.style.position = 'absolute';
             clone.style.left = '-9999px';
             document.body.appendChild(clone);
-            console.log("Before clone html 2 canvas");
-            // Take screenshot of clone
+    
+            console.log("Before capturing screenshot with html2canvas");
+            // Capture screenshot of the clone
             const canvas = await html2canvas(clone);
-
-            console.log("After clone html 2 canvas");
-            // Remove clone from document
+            console.log("After capturing screenshot with html2canvas");
+    
+            // Remove the temporary clone
             document.body.removeChild(clone);
-
-            // Convert canvas to blob and share
+    
+            // Convert canvas to blob
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-            console.log("After blob");
-            // const imageToShare = canvas.toDataURL('image/png');
-            // const blob = await (await fetch(imageToShare)).blob();
+    
+            // Create a File from the blob
             const file = new File([blob], 'notification.png', { type: blob.type });
-            
-            // if(navigator.share){
-            //     await navigator.share({
-            //         title: 'Detalle de operacion',
-            //         files: [file]
-            //     });
-            // }else{
-
-            // }
-            
-            if (navigator.canShare()) {
-                console.log("Before share");
+    
+            // Use the Web Share API if supported (mobile devices and desktops that support it)
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                console.log("Using navigator.share");
                 await navigator.share({
                     files: [file],
                     title: 'Notification Details',
                     text: 'Check out this notification'
                 });
-                console.log("After share");
-
+                console.log("Share successful");
             } else {
-                console.log("Se fue por else");
-
+                // Fallback for devices that do not support file sharing via the Share API (e.g. desktop browsers)
+                console.log("Fallback: downloading image");
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
+                a.href = url;
                 a.download = 'notification.png';
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }
         } catch (error) {
