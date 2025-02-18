@@ -12,8 +12,6 @@ function isValidURL(str) {
     }
 }
 
-
-
 function SendingUserData(
     {
         userName = '',
@@ -23,11 +21,6 @@ function SendingUserData(
         backUrl = null
     }
 ) {
-
-
-
-
-
 
     return (
 
