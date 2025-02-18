@@ -191,120 +191,55 @@ function NotificationModal({
 
     }, [])
 
-    // Helper to create a canvas image for sharing that mimics the modal's style
-    const createNotificationShareImage = () => {
-        const canvas = document.createElement('canvas');
-        const width = 400;
-        const height = 600;
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-    
-        // Draw white background
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, width, height);
-    
-        // --- Top Logo (simulated) ---
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 18px Arial';
-        ctx.fillStyle = '#000000';
-        // Simulate BitMercadoDigitalLogo with text
-        ctx.fillText('BitMercado Digital', width / 2, 30);
-    
-        // --- Notification Icon (simulated as a colored circle) ---
-        // Determine the icon's color based on the notification type
-        let iconColor = '#0065BB'; // default blue
-        if (typeOfNotification === "SUCCESS") {
-            iconColor = '#22c55e'; // green
-        } else if (typeOfNotification === "ERROR") {
-            iconColor = '#ef4444'; // red
-        } else if (typeOfNotification === "INFO") {
-            iconColor = '#3b82f6'; // blue
-        } else if (typeOfNotification === "WARNING") {
-            iconColor = '#facc15'; // yellow
-        }
-        ctx.fillStyle = iconColor;
-        ctx.beginPath();
-        // Draw a circle to represent the notification icon
-        ctx.arc(width / 2, 80, 35, 0, Math.PI * 2, true);
-        ctx.fill();
-    
-        // --- Notification Title ---
-        ctx.textAlign = 'center';
-        ctx.font = '600 20px Arial';
-        ctx.fillStyle = '#0F172A';
-        ctx.fillText(Title(operationResult), width / 2, 130);
-    
-        // --- Data Details (simulating DescribeComponent rows) ---
-        const leftMargin = 20;
-        const rightMargin = 20;
-        let y = 160;
-        const lineHeight = 28;
-    
-        // Helper to draw a row with label (left, bold, slate color) and value (right, light)
-        const drawDataRow = (label, value) => {
-            // Draw Label
-            ctx.textAlign = 'left';
-            ctx.font = 'bold 16px Arial';
-            ctx.fillStyle = '#1e293b'; // approximating text-slate-900
-            ctx.fillText(label, leftMargin, y);
-            // Draw Value
-            ctx.textAlign = 'right';
-            ctx.font = 'normal 16px Arial';
-            ctx.fillStyle = '#000000';
-            ctx.fillText(value, width - rightMargin, y);
-            y += lineHeight;
-        };
-    
-        if (concepto) {
-            drawDataRow('Concepto:', concepto);
-        }
-        if (operationResult === "ACCP" && montoCobrado) {
-            drawDataRow('Monto:', `Bs. ${montoCobrado}`);
-        }
-        if (fechaPago) {
-            drawDataRow('Fecha de pago:', FormatDate(fechaPago));
-        }
-        if (bancoPagador) {
-            drawDataRow('Banco pagador:', bancoPagador);
-        }
-        if (accountNumber) {
-            drawDataRow('Cuenta:', accountNumber);
-        }
-        if (cedulaPagador) {
-            drawDataRow('Cédula:', cedulaPagador);
-        }
-        if (refInternal) {
-            drawDataRow('Ref Interna:', refInternal);
-        }
-        if (refBanco) {
-            drawDataRow('Ref. Banco:', refBanco);
-        }
-        if (refSypago) {
-            drawDataRow('Ref. SyPago:', refSypago);
-        }
-        if (leadId) {
-            drawDataRow('ID:', `#${leadId}`);
-        }
-        if (typeOfNotification === "ERROR" && codigo) {
-            drawDataRow('Código:', codigo);
-        }
-        if (typeOfNotification === "ERROR" && razon) {
-            drawDataRow('Razón:', razon);
-        }
-    
-        return canvas;
-    };
-    
-    // Updated share handler that builds the share image directly from the canvas
     const handleShare = async () => {
         try {
-            // Create the shareable canvas image
-            const shareCanvas = createNotificationShareImage();
+            console.log("Starting share process...");
+            const element = modalContentRef.current;
+
+            // Clone and style the modal content
+            const clone = element.cloneNode(true);
+            clone.style.padding = '2rem';
+            clone.style.background = 'white';
+            clone.style.borderRadius = '0.75rem';
+
+            // Clean up clone
+            const okButton = clone.querySelector('button.ok-button');
+            if (okButton) {
+                okButton.remove();
+            }
+
+            const copyButtons = clone.querySelectorAll('.ml-2');
+            copyButtons.forEach(button => {
+                const parentDiv = button.closest('.flex.justify-between');
+                if (parentDiv) {
+                    button.remove();
+                    parentDiv.style.justifyContent = 'flex-end';
+                    parentDiv.style.marginRight = '1.5rem';
+                }
+            });
+
+            // Position clone off-screen
+            clone.style.position = 'absolute';
+            clone.style.left = '-9999px';
+            document.body.appendChild(clone);
+
+            // Generate styled image with html2canvas
+            console.log("Capturing with html2canvas...");
+            const styledCanvas = await html2canvas(clone);
+            document.body.removeChild(clone);
+
+            // Create new canvas and copy the styled content
+            const shareCanvas = document.createElement('canvas');
+            shareCanvas.width = styledCanvas.width;
+            shareCanvas.height = styledCanvas.height;
+            const ctx = shareCanvas.getContext('2d');
+            ctx.drawImage(styledCanvas, 0, 0);
+
+            // Convert to blob and share
             const blob = await new Promise(resolve => shareCanvas.toBlob(resolve, 'image/png'));
-            const file = new File([blob], 'notification.png', { type: blob.type });
-    
-            if (navigator.share) {
+            const file = new File([blob], 'notification.png', { type: 'image/png' });
+
+            if (navigator.share && navigator.canShare({ files: [file] })) {
                 console.log("Using navigator.share");
                 await navigator.share({
                     files: [file],
@@ -313,7 +248,6 @@ function NotificationModal({
                 });
                 console.log("Share successful");
             } else {
-                // Fallback: download the image
                 console.log("Fallback: downloading image");
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -325,7 +259,8 @@ function NotificationModal({
                 URL.revokeObjectURL(url);
             }
         } catch (error) {
-            console.error('Error sharing:', error);
+            console.error('Error in share process:', error);
+            alert('Sorry, there was an error sharing the notification. Please try again.');
         }
     };
 
