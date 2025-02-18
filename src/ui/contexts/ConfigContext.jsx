@@ -15,9 +15,9 @@ async function LoadConfig() {
 
     const host = window.location.origin;
 
-    // let configRequest = await fetch(import.meta.env.BASE_URL + '/config.json');
+    let configRequest = await fetch(import.meta.env.BASE_URL + '/config.json');
 
-    let configRequest = await fetch("http://192.168.120.138:5173" + '/config.json');
+    // let configRequest = await fetch("http://192.168.120.138:5173" + '/config.json');
 
     logger.info("Config Request:", configRequest);
 

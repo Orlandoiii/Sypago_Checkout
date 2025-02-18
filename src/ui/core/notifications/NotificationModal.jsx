@@ -224,15 +224,17 @@ function NotificationModal({
             clone.style.position = 'absolute';
             clone.style.left = '-9999px';
             document.body.appendChild(clone);
-
+            console.log("Before clone html 2 canvas");
             // Take screenshot of clone
             const canvas = await html2canvas(clone);
 
+            console.log("After clone html 2 canvas");
             // Remove clone from document
             document.body.removeChild(clone);
 
             // Convert canvas to blob and share
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            console.log("After blob");
             // const imageToShare = canvas.toDataURL('image/png');
             // const blob = await (await fetch(imageToShare)).blob();
             const file = new File([blob], 'notification.png', { type: blob.type });
@@ -246,13 +248,18 @@ function NotificationModal({
 
             // }
             
-            if (navigator.share) {
+            if (navigator.canShare()) {
+                console.log("Before share");
                 await navigator.share({
                     files: [file],
                     title: 'Notification Details',
                     text: 'Check out this notification'
                 });
+                console.log("After share");
+
             } else {
+                console.log("Se fue por else");
+
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.download = 'notification.png';
@@ -293,12 +300,12 @@ function NotificationModal({
 
                 <div className={`relative flex justify-center items-center w-full z-[1] pt-8`}>
 
-                    {/* <button
+                    <button
                         onClick={handleShare}
                         className="absolute top-4 right-4 bg-slate-100 rounded-full p-2 shadow-lg flex justify-center items-center hover:bg-slate-200 transition-colors"
                     >
-                        <ShareIcon width="w-[32px]" height="h-[32px]" />
-                    </button> */}
+                        <ShareIcon width="w-[25px] md:w-[32px]" height="h-[25px] md:h-[32px]" />
+                    </button>
 
                     <div ref={modalContentRef} className="flex flex-col justify-center items-center">
 
