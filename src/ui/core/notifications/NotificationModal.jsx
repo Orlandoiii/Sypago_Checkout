@@ -218,7 +218,7 @@ function NotificationModal({
                 }
             });
     
-            // Append the clone to the document (off-screen)
+            // Append the clone off-screen
             clone.style.position = 'absolute';
             clone.style.left = '-9999px';
             document.body.appendChild(clone);
@@ -237,8 +237,9 @@ function NotificationModal({
             // Create a File from the blob
             const file = new File([blob], 'notification.png', { type: blob.type });
     
-            // Use the Web Share API if supported (mobile devices and desktops that support it)
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            // Instead of checking navigator.canShare, simply use navigator.share if available.
+            // This allows Chrome on iOS to attempt sharing the file.
+            if (navigator.share) {
                 console.log("Using navigator.share");
                 await navigator.share({
                     files: [file],
@@ -247,7 +248,7 @@ function NotificationModal({
                 });
                 console.log("Share successful");
             } else {
-                // Fallback for devices that do not support file sharing via the Share API (e.g. desktop browsers)
+                // Fallback for devices that do not support the Share API
                 console.log("Fallback: downloading image");
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
