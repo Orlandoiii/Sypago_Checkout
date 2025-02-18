@@ -191,54 +191,70 @@ function NotificationModal({
 
     }, [])
 
+    // Helper to create a canvas image for sharing
+    const createNotificationShareImage = () => {
+        const canvas = document.createElement('canvas');
+        const width = 400;
+        const height = 600;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+    
+        // Fill background with white
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, width, height);
+    
+        // Draw header text using the Title() function
+        ctx.fillStyle = 'black';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(Title(operationResult), width / 2, 40);
+    
+        // Set up detail text properties
+        ctx.textAlign = 'left';
+        ctx.font = '16px Arial';
+        let y = 80;
+        const lineHeight = 30;
+        const leftMargin = 20;
+    
+        // Helper to draw a detail row
+        const drawRow = (label, value) => {
+            ctx.fillText(`${label} ${value}`, leftMargin, y);
+            y += lineHeight;
+        };
+    
+        if (concepto) {
+            drawRow('Concepto:', concepto);
+        }
+        if (operationResult === "ACCP" && montoCobrado) {
+            drawRow('Monto:', `Bs. ${montoCobrado}`);
+        }
+        if (fechaPago) {
+            drawRow('Fecha de pago:', FormatDate(fechaPago));
+        }
+        if (bancoPagador) {
+            drawRow('Banco pagador:', bancoPagador);
+        }
+        if (accountNumber) {
+            drawRow('Cuenta:', accountNumber);
+        }
+        if (cedulaPagador) {
+            drawRow('Cédula:', cedulaPagador);
+        }
+    
+        // Additional detail rows can be added here if needed.
+    
+        return canvas;
+    };
+    
+    // Updated share handler that builds the share image directly
     const handleShare = async () => {
         try {
-            const element = modalContentRef.current;
-    
-            // Clone the modal content to create a clean screenshot
-            const clone = element.cloneNode(true);
-            clone.style.padding = '2rem';
-            clone.style.background = 'white';
-            clone.style.borderRadius = '0.75rem';
-    
-            // Remove the OK button from the clone
-            const okButton = clone.querySelector('button.ok-button');
-            if (okButton) {
-                okButton.remove();
-            }
-    
-            // Remove copy buttons and adjust spacing
-            const copyButtons = clone.querySelectorAll('.ml-2');
-            copyButtons.forEach(button => {
-                const parentDiv = button.closest('.flex.justify-between');
-                if (parentDiv) {
-                    button.remove();
-                    parentDiv.style.justifyContent = 'flex-end';
-                    parentDiv.style.marginRight = '1.5rem';
-                }
-            });
-    
-            // Append the clone off-screen
-            clone.style.position = 'absolute';
-            clone.style.left = '-9999px';
-            document.body.appendChild(clone);
-    
-            console.log("Before capturing screenshot with html2canvas");
-            // Capture screenshot of the clone
-            const canvas = await html2canvas(clone);
-            console.log("After capturing screenshot with html2canvas");
-    
-            // Remove the temporary clone
-            document.body.removeChild(clone);
-    
-            // Convert canvas to blob
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-    
-            // Create a File from the blob
+            // Create the shareable canvas image
+            const shareCanvas = createNotificationShareImage();
+            const blob = await new Promise(resolve => shareCanvas.toBlob(resolve, 'image/png'));
             const file = new File([blob], 'notification.png', { type: blob.type });
     
-            // Instead of checking navigator.canShare, simply use navigator.share if available.
-            // This allows Chrome on iOS to attempt sharing the file.
             if (navigator.share) {
                 console.log("Using navigator.share");
                 await navigator.share({
@@ -248,7 +264,7 @@ function NotificationModal({
                 });
                 console.log("Share successful");
             } else {
-                // Fallback for devices that do not support the Share API
+                // Fallback for devices that don't support navigator.share
                 console.log("Fallback: downloading image");
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
