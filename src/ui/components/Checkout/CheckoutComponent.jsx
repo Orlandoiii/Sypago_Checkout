@@ -2,7 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import logger from "../../../logic/Logger/logger";
 import { paymentNumberToName, useTransaction } from "../../contexts/TransactionContext";
 import PayUserDataForm from "./Forms/PayUserDataForm";
-import SendingUserData from "./SendingUserData";
+import SendingUserData, { isValidURL } from "./SendingUserData";
 import LoadModal from "../../core/modal/LoadModal";
 import { useNotificationAlert } from "../../core/notifications/NotificationAlertModal";
 import { SignalRService } from "../../../logic/SignalRCom/SignalRCom";
@@ -223,8 +223,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         const detailData = [emisorObj, receptObj];
 
 
-
-
         setReceptSubmitData(receptData);
         setConfirmationData(detailData);
         setOpenDetail(true);
@@ -276,7 +274,7 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 timeoutPayRef.current = setTimeout(() => {
                     failPayProcess(`Lo sentimos pero tenemos incovenientes 
                         por favor verifique con su banco si los fondos han sido debitads Ref:${transactionId}`)
-                }, 1000)
+                }, 60000)
 
                 return;
 
@@ -719,19 +717,15 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                     let callBack = config.sypago_callback_url;
 
-                    if (transactionState.transactionData.type == "RedirectToCheckout"
-                        && !transactionState.isError) {
+                    const resultForUrl =
+                        `?result=${transactionState.originalMessageStatus}&hash=${transactionState.hash}`
 
-                        const resultForUrl =
-                            `?result=${transactionState.originalMessageStatus}&hash=${transactionState.hash}`
+                    const url = transactionState.paymentStatus == "ACCP" ?
+                        transactionState.transactionData?.notification_urls?.sucessful_callback_url :
+                        transactionState.transactionData?.notification_urls?.failed_callback_url;
 
-                        const url = transactionState.paymentStatus == "ACCP" ?
-                            transactionState.transactionData.notification_urls.sucessful_callback_url :
-                            transactionState.transactionData.notification_urls.failed_callback_url;
-
+                    if (url && isValidURL(url)) {
                         callBack = url + resultForUrl;
-
-
                     }
 
                     linkRef.current.href = callBack;
