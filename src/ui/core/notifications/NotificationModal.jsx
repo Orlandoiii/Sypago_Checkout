@@ -32,7 +32,7 @@ function DescribeComponent({ title = '', value = '' }) {
 
     return (
         <div className="w-[350px] flex flex-row justify-between">
-            <div className=" text-slate-900 font-bold w-[40%] text-sm md:text-base">{title}</div>
+            <div className="text-slate-900 font-bold w-[40%] text-sm md:text-base">{title}</div>
             <div className="text-black font-light mr-6 text-right w-[60%] text-sm md:text-base">{value}</div>
         </div>
     )
@@ -191,52 +191,238 @@ function NotificationModal({
 
     }, [])
 
+    function drawDataRow(ctx, label, value, xLeft, xRight, y, font = '18px Arial') {
+        ctx.font = font;
+        ctx.fillText(label, xLeft, y);
+        ctx.fillText(value || "", xRight, y); // Handle empty values
+    }
+
     const handleShare = async () => {
         try {
             console.log("Starting share process...");
-            const element = modalContentRef.current;
+            const canvas = document.getElementById('shareDetailCanvas');
+            const contex = canvas.getContext('2d');
 
-            // Clone and style the modal content
-            const clone = element.cloneNode(true);
-            clone.style.padding = '2rem';
-            clone.style.background = 'white';
-            clone.style.borderRadius = '0.75rem';
+            contex.fillStyle = 'white';
+            contex.fillRect(0, 0, canvas.width, canvas.height);
+            
 
-            // Clean up clone
-            const okButton = clone.querySelector('button.ok-button');
-            if (okButton) {
-                okButton.remove();
+            let svgElement = document.getElementById('logobit');
+            if(window.innerWidth < 450){
+                svgElement = document.getElementById('logobit-mobile');
+            }
+            const svgDataUri = 'data:image/svg+xml,' + encodeURIComponent(svgElement.outerHTML);
+            const bitImage = new Image();
+            bitImage.src = svgDataUri;
+            
+            await bitImage.decode();
+            
+            const sypagoLogoX = (canvas.width - bitImage.width) / 2;
+            const sypagoLogoY = 30;
+            contex.drawImage(bitImage, sypagoLogoX, sypagoLogoY);
+
+            var svgStatusElement;
+
+            if (typeOfNotification == "SUCCESS") {
+                svgStatusElement = document.getElementById('img-accp');
+            } else if (typeOfNotification == "ERROR") {
+                svgStatusElement = document.getElementById('img-rjct');
+            } else if (typeOfNotification == "INFO") {
+                svgStatusElement = document.getElementById('img-process');
+            } 
+
+            const svgStatusUri = 'data:image/svg+xml,' + encodeURIComponent(svgStatusElement.outerHTML);
+            const statusImage = new Image();
+            statusImage.src = svgStatusUri;
+            await statusImage.decode();
+            const statusImageX = (canvas.width - statusImage.width) / 2;
+            const statusImageY = 150;
+            contex.drawImage(statusImage, statusImageX, statusImageY);
+
+            // Fonts and Text
+            contex.font = '18px Arial';
+            contex.textAlign = 'left';
+            contex.fillStyle = 'black';
+
+            // Positioning variables
+            let xLeft = 52;
+            let xRight = 218;
+            let y = 260;
+            const lineHeight = 30;
+
+
+            // Data Rows
+            if (concepto != null) {
+                const text = "Concepto:";
+                const value = concepto;
+                const maxWidth = xRight - xLeft; // Available width for the value
+        
+                // Split the value into lines if it exceeds the character limit
+                const lines = [];
+                if (value.length > 17) {
+                    let currentLine = "";
+                    const words = value.split(" "); // Split by spaces to handle words
+        
+                    for (const word of words) {
+                        const testLine = currentLine ? `${currentLine} ${word}` : word;
+                        const metrics = contex.measureText(testLine);
+        
+                        if (metrics.width <= maxWidth) {
+                            currentLine = testLine;
+                        } else {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        }
+                    }
+                    lines.push(currentLine); // Add the last line
+                } else {
+                    lines.push(value); // Value fits on one line
+                }
+        
+                // Draw the label
+                contex.fillText(text, xLeft, y);
+        
+                // Draw the value on multiple lines
+                let valueY = y;
+                for (const line of lines) {
+                    contex.fillText(line, xRight, valueY);
+                    valueY += lineHeight;
+                }
+        
+                y = valueY; // Update y to the next position after the multi-line text
+        
             }
 
-            const copyButtons = clone.querySelectorAll('.ml-2');
-            copyButtons.forEach(button => {
-                const parentDiv = button.closest('.flex.justify-between');
-                if (parentDiv) {
-                    button.remove();
-                    parentDiv.style.justifyContent = 'flex-end';
-                    parentDiv.style.marginRight = '1.5rem';
+
+            if (operationResult == "ACCP" && montoCobrado) {
+                drawDataRow(contex, "Monto:", 'Bs ' + montoCobrado, xLeft, xRight, y);
+                y += lineHeight;
+            }
+
+            if (fechaPago) {
+                drawDataRow(contex, "Fecha de pago:", FormatDate(fechaPago), xLeft, xRight, y);
+                y += lineHeight;
+            }
+
+            if (bancoPagador != null) {
+                const text = "Banco pagador:";
+                const value = bancoPagador;
+                const maxWidth = xRight - xLeft; // Available width for the value
+        
+                // Split the value into lines if it exceeds the character limit
+                const lines = [];
+                if (value.length > 17) {
+                    let currentLine = "";
+                    const words = value.split(" "); // Split by spaces to handle words
+        
+                    for (const word of words) {
+                        const testLine = currentLine ? `${currentLine} ${word}` : word;
+                        const metrics = contex.measureText(testLine);
+        
+                        if (metrics.width <= maxWidth) {
+                            currentLine = testLine;
+                        } else {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        }
+                    }
+                    lines.push(currentLine); // Add the last line
+                } else {
+                    lines.push(value); // Value fits on one line
                 }
-            });
+        
+                // Draw the label
+                contex.fillText(text, xLeft, y);
+        
+                // Draw the value on multiple lines
+                let valueY = y;
+                for (const line of lines) {
+                    contex.fillText(line, xRight, valueY);
+                    valueY += lineHeight;
+                }
+        
+                y = valueY; // Update y to the next position after the multi-line text
+        
+            }
+            
+            if (accountNumber) {
+                drawDataRow(contex, "Cuenta o Número pagador:", accountNumber, xLeft, xRight, y);
+                y += lineHeight;
+            }
 
-            // Position clone off-screen
-            clone.style.position = 'absolute';
-            clone.style.left = '-9999px';
-            document.body.appendChild(clone);
+            if (cedulaPagador) {
+                drawDataRow(contex, "Cédula pagador:", cedulaPagador, xLeft, xRight, y);
+                y += lineHeight;
+            }
+            if(typeOfNotification == "INFO" || typeOfNotification == "ERROR" || refInternal != null){
+                drawDataRow(contex, "Ref. Interna:", refInternal, xLeft, xRight, y);
+                y += lineHeight;
+            }
 
-            // Generate styled image with html2canvas
-            console.log("Capturing with html2canvas...");
-            const styledCanvas = await html2canvas(clone);
-            document.body.removeChild(clone);
+            if (refBanco != null) {
+                drawDataRow(contex, "Ref. Bancaria:", refBanco, xLeft, xRight, y);
+                y += lineHeight;
+            }
+            if (refSypago != null) {
+                drawDataRow(contex, "Ref. Sypago:", refSypago, xLeft, xRight, y);
+                y += lineHeight;
+            }
+            if (leadId != null) {
+                drawDataRow(contex, "ID:", "#" + leadId, xLeft, xRight, y);
+                y += lineHeight;
+            }
 
-            // Create new canvas and copy the styled content
-            const shareCanvas = document.createElement('canvas');
-            shareCanvas.width = styledCanvas.width;
-            shareCanvas.height = styledCanvas.height;
-            const ctx = shareCanvas.getContext('2d');
-            ctx.drawImage(styledCanvas, 0, 0);
+            if(typeOfNotification == "ERROR" && codigo){
+                drawDataRow(contex, "Código:", codigo, xLeft, xRight, y);
+                y += lineHeight;
+            }
+
+            if (typeOfNotification == "ERROR" && razon) {
+                const text = "Razón:";
+                const value = razon;
+                const maxWidth = xRight - xLeft; // Available width for the value
+        
+                // Split the value into lines if it exceeds the character limit
+                const lines = [];
+                if (value.length > 17) {
+                    let currentLine = "";
+                    const words = value.split(" "); // Split by spaces to handle words
+        
+                    for (const word of words) {
+                        const testLine = currentLine ? `${currentLine} ${word}` : word;
+                        const metrics = contex.measureText(testLine);
+        
+                        if (metrics.width <= maxWidth) {
+                            currentLine = testLine;
+                        } else {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        }
+                    }
+                    lines.push(currentLine); // Add the last line
+                } else {
+                    lines.push(value); // Value fits on one line
+                }
+        
+                // Draw the label
+                contex.fillText(text, xLeft, y);
+        
+                // Draw the value on multiple lines
+                let valueY = y;
+                for (const line of lines) {
+                    contex.fillText(line, xRight, valueY);
+                    valueY += lineHeight;
+                }
+        
+                y = valueY; // Update y to the next position after the multi-line text
+        
+            }
+            
+            // Get base64 image and share
+            const imageToShare = canvas.toDataURL('image/png');
 
             // Convert to blob and share
-            const blob = await new Promise(resolve => shareCanvas.toBlob(resolve, 'image/png'));
+            const blob = await (await fetch(imageToShare)).blob();
             const file = new File([blob], 'notification.png', { type: 'image/png' });
 
             if (navigator.share && navigator.canShare({ files: [file] })) {
@@ -283,8 +469,6 @@ function NotificationModal({
         leadId
     })
 
-
-
     return (
         <>
             <Modal open={open}>
@@ -304,7 +488,7 @@ function NotificationModal({
 
                         <div className="mt-4 w-full h-[60px] flex justify-center items-center">
                             <div className="w-[220px] h-[80px] flex justify-center items-center">
-                                <BitMercadoDigitalLogo mainColor="color" />
+                                < BitMercadoDigitalLogo mainColor="color" />
                             </div>
                         </div>
 
@@ -337,7 +521,7 @@ function NotificationModal({
                             {cedulaPagador && <DescribeComponent title="Cédula pagador:" value={cedulaPagador} />}
                             
                             {(typeOfNotification == "INFO" || typeOfNotification == "ERROR") && refInternal &&
-                                <RefComponent refTitle="Ref Interna:" refValue={refInternal} />
+                                <RefComponent refTitle="Ref. Interna:" refValue={refInternal} />
                             }
 
                             {refBanco && <RefComponent refTitle="Ref. Banco:" refValue={refBanco} />}
@@ -351,9 +535,6 @@ function NotificationModal({
                             {typeOfNotification == "ERROR" && codigo && <DescribeComponent title="Razón:" value={razon} />}
 
                             {/* {typeOfNotification == "ERROR" && razon && <ErrorDescriptionComponent showArrow={showArrow} value={razon} />} */}
-
-                            
-
 
                         </div>
 
