@@ -1,5 +1,4 @@
 import React, { useMemo } from "react"
-import logger from "../../../logic/Logger/logger";
 
 
 function ChipOptions({ options, selectedOption, onSelectedOption }) {
@@ -37,7 +36,6 @@ function ChipOptions({ options, selectedOption, onSelectedOption }) {
 
 function ChipSelector({ options = ["Teléfono", "Cuenta"], selectedOption = "Teléfono", onSelectedOption }) {
 
-    logger.log("Renderizo Chip Selector");
 
     return (
         <div className="h-full w-full flex">

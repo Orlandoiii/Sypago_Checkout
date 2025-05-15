@@ -123,10 +123,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
     const linkRef = useRef(null);
 
 
-
-    logger.info("Transaction State Renderizo Checkout Componenet", transactionState, config);
-
-
     const dataIsLoaded = transactionState.isLoaded();
 
 
@@ -244,7 +240,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
     function onSubmitOtp(otpValue) {
 
-        logger.info("OTP Value:", otpValue);
 
 
         const transaction = receptSubmitData;
@@ -285,7 +280,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 const acceptResult = AcceptError.GenerateAcceptError(result?.err);
 
                 if (acceptResult?.GetErrorMessage() != "RATECHANGE") {
-                    logger.error("Error iniciando pago:", result)
                     failPayProcess('Lo sentimos tenemos problemas para iniciar el pago')
                     return
                 }
@@ -293,7 +287,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                 SignalRService.GetTransaction(transactionId, isBlueprint)
                     .then(result => {
                         if (!result.isSuccessful) {
-                            logger.error(result.err);
                             failPayProcess("Lo sentimos tenemos problemas para iniciar el pago")
                             return;
                         }
@@ -302,7 +295,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                         openAlertNotification("info", "Lo sentimos pero la tasa BCV cambio verifique el nuevo monto e intente nuevamente")
 
                     }).catch(err => {
-                        logger.error(err);
                         failPayProcess("Lo sentimos tenemos problemas para iniciar el pago");
                     })
 
@@ -325,7 +317,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
 
 
-        logger.info("Llego Notificacion a la vista", transactionStatusJson);
 
 
         const transactionStatus = JSON.parse(transactionStatusJson);
@@ -481,7 +472,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                     SignalRService.GetAllBanks()
                         .then((b) => {
-                            logger.info("RESULT Banks", b);
 
                             if (!b.isSuccessful) {
                                 logger.error(b.err);
@@ -503,7 +493,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
                         })
                     SignalRService.GetTransaction(transactionId, isBlueprint)
                         .then((t) => {
-                            logger.info("RESULT Transaction", t);
 
                             if (!t.isSuccessful) {
 
@@ -547,7 +536,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
                     SignalRService.GetAllRejectCodes()
                         .then((c) => {
-                            logger.info("RESULT RJCT CODES", c);
 
                             if (!c.isSuccessful) {
                                 logger.error(c.err);
@@ -601,11 +589,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
 
     }, [dataIsLoaded])
-
-
-
-    logger.log("Renderizo CheckoutComponent with data:", transactionState.transactionData)
-
 
     return (
         <>

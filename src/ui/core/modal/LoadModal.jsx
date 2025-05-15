@@ -3,7 +3,6 @@ import LoadImage from "../img/LoadSypagoImage";
 import Backdrop from "./Backdrop";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadModalController } from "../../controllers/LoadModalController";
-import logger from "../../../logic/Logger/logger";
 
 const loadEffects = {
     hidden: {
@@ -48,7 +47,6 @@ export default function LoadModal({ open, setOpen, message, setMessage,
         }
     }, [])
 
-    logger.log("Renderizo LoadModal");
 
 
     return (

@@ -1,5 +1,4 @@
 import { motion } from "framer-motion"
-import logger from "../../../logic/Logger/logger"
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -18,7 +17,6 @@ const backDropAnimation = {
 
 export default function Backdrop({ children, outRef, backGround = "bg-black/30" }) {
 
-    logger.log("Renderizo Backdrop");
 
     const [parenNode, setParentNode] = useState(null);
 

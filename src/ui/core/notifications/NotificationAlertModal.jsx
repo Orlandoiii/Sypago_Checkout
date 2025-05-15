@@ -3,7 +3,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { createContext, useContext, useState } from 'react';
 import Backdrop from '../modal/Backdrop';
-import logger from '../../../logic/Logger/logger';
 
 function SuccessIcon({ }) {
     return (
@@ -77,7 +76,6 @@ function NotificationAlertModal({ open, onClick, type, message }) {
 
     }
 
-    logger.log("Renderizo Alert Modal")
 
 
     return (

@@ -16,12 +16,10 @@ class LoadingModalNotificationService {
 
     openModal(message) {
 
-        logger.log("Call to Open Load Modal")
         this.eventEmitter.emit('open', message);
     }
 
     closeModal() {
-        logger.log("Call to Close Load Modal")
         this.eventEmitter.emit('close');
     }
 }

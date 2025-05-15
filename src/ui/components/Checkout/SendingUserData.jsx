@@ -1,6 +1,5 @@
 import React from 'react';
 import BackArrow from '../../core/icons/BackArrow';
-import logger from '../../../logic/Logger/logger';
 
 
 export function isValidURL(str) {
@@ -8,7 +7,6 @@ export function isValidURL(str) {
         new URL(str);
         return true;
     } catch (e) {
-        console.log(e)
         return false;
     }
 }
@@ -22,9 +20,6 @@ function SendingUserData(
         backUrl = null
     }
 ) {
-
-
-    logger.info("BackUrl:", backUrl)
 
     return (
 

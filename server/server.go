@@ -42,6 +42,20 @@ func staticHandler(engine *gin.Engine) {
 	})
 }
 
+func SecurityHeaders() gin.HandlerFunc {
+
+	return func(c *gin.Context) {
+		c.Header("X-Frame-Options", "SAMEORIGIN")
+
+		//c.Header("Content-Security-Policy", "frame-ancestors 'none'; default-src 'self'")
+
+		c.Header("X-Content-Type-Options", "nosniff")
+		c.Header("X-XSS-Protection", "1; mode=block")
+
+		c.Next()
+	}
+}
+
 func main() {
 	decimal.MarshalJSONWithoutQuotes = true
 
@@ -52,6 +66,9 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
+
+	router.Use(SecurityHeaders())
+
 	staticHandler(router)
 
 	router.POST("/request-sypago", func(c *gin.Context) {

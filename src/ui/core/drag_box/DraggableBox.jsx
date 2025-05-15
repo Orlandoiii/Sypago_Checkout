@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react"
 import { motion, useDragControls, useMotionValue, useAnimate } from 'framer-motion'
 import useMeasure from "react-use-measure";
-import logger from "../../../logic/Logger/logger";
 import Backdrop from "../modal/Backdrop";
 
 export default function DraggableBox({ children, open, onClose, topStickyChild, closeFromInside = false }) {
@@ -50,14 +49,12 @@ export default function DraggableBox({ children, open, onClose, topStickyChild, 
                         animate={{ y: "0%" }}
                         transition={{ ease: "easeInOut", duration: 0.3 }}
                         onDragStart={(_, info) => {
-                            logger.log("DRAG START", info);
 
                             dragDuration.current.init = new Date();
                             dragPosition.current.init = info;
                         }}
                         onDragEnd={(_, info) => {
 
-                            logger.log("DRAG END", info);
                             dragDuration.current.finish = new Date();
                             dragPosition.current.finish = info;
 

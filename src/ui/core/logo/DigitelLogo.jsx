@@ -37,7 +37,6 @@ function DigitelLogoPrimary() {
 
 function DigitelLogoNegative() {
    
-   console.log("Renderizo DigitelLogoNegative")
     return (
         <svg xmlns="http://www.w3.org/2000/svg" id="Capa_1" data-name="Capa 1" viewBox="0 0 219.16 72.31">
             <defs>

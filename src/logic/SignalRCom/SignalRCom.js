@@ -18,6 +18,8 @@ export async function Wait(miliseconds = 1000) {
 
 class SignalRCom {
 
+
+
     connection = null;
     hubUrl = '';
 
@@ -43,7 +45,9 @@ class SignalRCom {
     async Stop() {
 
         try {
-            await this.connection?.stop();
+            await this.
+            connection.
+            stop();
         } catch (err) {
             logger.error(err);
         } finally {
@@ -74,9 +78,7 @@ class SignalRCom {
                     await this.Stop();
                 }
 
-                this.connection = new SignalR.HubConnectionBuilder()
-
-                    .withUrl(this.hubUrl, {
+                this.connection = new SignalR.HubConnectionBuilder().withUrl(this.hubUrl, {
                         skipNegotiation: true,
                         transport: SignalR.HttpTransportType.WebSockets
                     })
@@ -84,15 +86,17 @@ class SignalRCom {
                     .configureLogging(SignalR.LogLevel.Warning) // Optional for debugging
                     .build();
 
-                logger.log("Init Start Conexion");
+
 
                 await this.connection.start();
 
-                logger.log("End Start Conexion");
+
 
                 let counter = 0;
 
-                while (this.connection?.state != SignalR.HubConnectionState.Connected && counter < 1000) {
+                while (this.connection.state !=
+                    SignalR.HubConnectionState.Connected &&
+                    counter < 1000) {
 
                     let wait = new Promise((res, _) => {
                         setTimeout(() => {
@@ -127,25 +131,21 @@ class SignalRCom {
         }
 
         this.connection.onreconnecting(error => {
-            logger.error("Reconectando...", error)
             if (this.onReconnectionSub)
                 this.onReconnectionSub(error);
         });
 
         this.connection.onreconnected(connectionId => {
-            logger.info("Reconectado:", connectionId)
             if (this.onReconnectedSub)
                 this.onReconnectedSub()
         });
 
         this.connection.onclose(error => {
-            logger.error("Cerrada la conexion", error);
             if (this.onCloseSub)
                 this.onCloseSub()
         })
 
         this.connection.on("NotifyExternalApi", (result, hash) => {
-            logger.log("Llego Notificacion", result, hash);
             if (this.notificationSub)
                 this.notificationSub(result, hash);
         });
@@ -170,7 +170,7 @@ class SignalRCom {
             return result;
         } catch (err) {
 
-            logger.log(err);
+            logger.error(err);
             throw err;
         }
 
@@ -182,7 +182,7 @@ class SignalRCom {
             return result;
         } catch (err) {
 
-            logger.log(err);
+            logger.error(err);
             throw err;
         }
     }
@@ -193,7 +193,7 @@ class SignalRCom {
             return result;
         } catch (err) {
 
-            logger.log(err);
+            logger.error(err);
             throw err;
         }
     }
@@ -221,7 +221,7 @@ class SignalRCom {
 
             return result;
         } catch (err) {
-            logger.log(err);
+            logger.error(err);
             throw err;
         }
     }
@@ -235,12 +235,11 @@ class SignalRCom {
                 methodName = 'AcceptLinkWithBlueprint'
             }
 
-            logger.log("Method Name:", methodName);
 
             let result = await this.connection.invoke(methodName, transactionId, payAmt, receptUser, otp);
             return result;
         } catch (err) {
-            logger.log(err);
+            logger.error(err);
             throw err;
         }
     }

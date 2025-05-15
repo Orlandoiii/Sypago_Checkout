@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { SignalRService } from "../../../../logic/SignalRCom/SignalRCom";
 import logger from "../../../../logic/Logger/logger";
-// import { InputHelpersFunctions, ValidateKey } from "../core/inputs/ShareLogic"
 
 
 function extractNumbers(text) {
@@ -199,7 +198,6 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
 
 
     const startTimer = () => {
-        //console.log("startTimer")
         timerID.current = setInterval(() => {
             setSecondsRemaining(prevSeconds => {
 
@@ -210,17 +208,14 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
     }
 
     const stopTimer = () => {
-        //console.log("stopTimer")
         if (timerID.current)
             clearInterval(timerID.current);
     }
 
 
     function resetOtpForm() {
-        //console.log("resetOtpForm")
         setSecondsRemaining(timerTime);
         stopTimer();
-        // Other resets if needed (OTP input, etc.)
     };
 
 
@@ -228,8 +223,7 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
     useEffect(() => {
 
         requestOtp(transactionId, isBlueprint, transactionData)
-            .then((result) => {
-                logger.log(result);
+            .then((_) => {
             })
             .catch((err => {
                 logger.error(err)
@@ -252,7 +246,6 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
         }
     }, [secondsRemaining])
 
-    logger.log("Renderizando OTP Form:", isBlueprint, transactionId, transactionData)
 
     return (
 
@@ -301,8 +294,7 @@ function OtpForm({ otpLen, timerTime, onSubmitOtpEvent, isBlueprint = false, tra
                 <a className="text-secundary cursor-pointer text-center text-md underline-offset-4 font-normal mt-2" aria-disabled=""
                     onClick={() => {
                         requestOtp(transactionId, isBlueprint, transactionData)
-                            .then((result) => {
-                                logger.log(result);
+                            .then((_) => {
                             })
                             .catch((err => {
                                 logger.error(err)

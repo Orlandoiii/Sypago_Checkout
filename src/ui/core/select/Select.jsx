@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import InputBox from '../input/InputBox';
-import logger from '../../../logic/Logger/logger';
 import { OptionSelectorButton, Options, OptionsContainer, OptionsMobile, OptionsSearchButton } from './SelectCommon';
 import { isMobile } from 'react-device-detect';
 import DraggableBox from '../drag_box/DraggableBox';
@@ -25,7 +24,6 @@ export default function Select({
 
 }) {
 
-    logger.log("Renderizo Select")
 
     const [open, setOpen] = useState(false)
 

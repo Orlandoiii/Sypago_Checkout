@@ -93,7 +93,6 @@ export const transactionReducer = (state, action) => {
             }
         case "transaction/setdata": {
             
-            //console.log("action.payload.transactionData", action.payload.transactionData)
             
             return {
                 ...state,

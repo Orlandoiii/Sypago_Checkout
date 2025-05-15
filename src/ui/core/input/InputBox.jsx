@@ -1,5 +1,4 @@
-import { useRef, useState } from "react";
-import logger from "../../../logic/Logger/logger";
+import { useState } from "react";
 
 
 const emptyRegister = {
@@ -7,15 +6,6 @@ const emptyRegister = {
     onBlur: null,
     name: "",
     ref: null,
-}
-function RemoveCharsOutOfRegex(value, regex) {
-    
-    if (regex.source === '.') 
-        return value;
-
-    const regexCondition = `[^${regex.source.replaceAll('[', '').replaceAll(']', '').replaceAll('|', '')}]`;
-    const negatedRegex = new RegExp(regexCondition, "g");
-    return value.replace(negatedRegex, '');
 }
 
 export function FormatAsFloat(value) {
@@ -166,14 +156,10 @@ export default function InputBox({
 }) {
 
 
-    logger.log("Renderizo InputBox:", errMessage)
 
 
     if (!inputName)
         inputName = label;
-
-
-
 
     const [isFocus, setIsFocus] = useState(false);
 
@@ -183,12 +169,10 @@ export default function InputBox({
 
     const defaultValue = value;
 
-    // let isWachtWithDefault = false
 
     if (watch && !controlled) {
 
         value = watch(inputName);
-        // isWachtWithDefault = true;
     }
 
     function handleOnChange(e) {

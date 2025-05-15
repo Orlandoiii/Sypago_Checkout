@@ -2,6 +2,8 @@ import { useForm } from 'react-hook-form';
 import InputBox from '../../core/input/InputBox';
 import { useState } from 'react';
 import Logo from '../../core/logo/Logo';
+import logger from '../../../logic/Logger/logger';
+
 const usernameOrEmailValidator = {
     required: "Este campo es requerido",
     validate: (value) => {
@@ -28,22 +30,7 @@ const passwordValidator = {
 
         return true;
 
-        if (!/[A-Z]/.test(value)) {
-            return "La contraseña debe contener al menos una letra mayúscula";
-        }
-        // Check for at least one lowercase letter
-        if (!/[a-z]/.test(value)) {
-            return "La contraseña debe contener al menos una letra minúscula";
-        }
-        // Check for at least one number
-        if (!/[0-9]/.test(value)) {
-            return "La contraseña debe contener al menos un número";
-        }
-        // Check for at least one special character
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
-            return "La contraseña debe contener al menos un carácter especial";
-        }
-        return true;
+ 
     }
 };
 
@@ -63,10 +50,9 @@ export default function LoginForm({onSubmit}) {
 
     const handleSubmitForm = async (data) => {
         try {
-            // Handle your login logic here
             onSubmit(data);
         } catch (error) {
-            console.error('Login failed:', error);
+            logger.error('Login failed:', error);
         }
     };
 

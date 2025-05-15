@@ -21,7 +21,6 @@ function NextButton({ children }) {
     return (
         <>
 
-            {/* <div className="relative min-w-[90px]"> */}
             <p className=" absolute transition-all ease-in-out 
             duration-300 top-1/2 left-1/2 transform  -translate-x-1/2  -translate-y-1/2  text-sm group-hover:translate-x-0 group-hover:left-2">{children}</p>
             <div className="absolute transition-all ease-in-out duration-300 
@@ -29,7 +28,6 @@ function NextButton({ children }) {
                 <NextIcon />
             </div>
 
-            {/* </div> */}
 
         </>
     )

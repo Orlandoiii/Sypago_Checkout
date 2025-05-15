@@ -174,7 +174,6 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
         mode: "onChange",
     });
 
-    logger.log("Renderizo PayForm", banks, receivingUser)
 
     const { errors, isSubmitted } = formState;
 
@@ -235,14 +234,6 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
         "blueprint/" : "transaction/") + transactionId;
 
 
-    logger.log("PayForm", bank, bankCodeData, bankCodeName, amt, docLetter);
-
-
-
-    logger.log("")
-
-
-
     useEffect(() => {
         const convertAmt = ParseToFloat(amt);
         setAmtErrMessage(validateAmount(convertAmt, amount));
@@ -283,7 +274,6 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
 
 
 
-                    logger.log("Submit de Pago", data);
 
                     const convertAmt = ParseToFloat(amt);
 
@@ -301,7 +291,6 @@ function PayUserDataForm({ banks = [], receivingUser, amount, onSubmit, transact
                         amt: convertAmt
 
                     }
-                    logger.log("DATA RECEPTORA EN SUBMIT:", newData);
                     if (onSubmit) {
                         onSubmit(newData);
                     }
