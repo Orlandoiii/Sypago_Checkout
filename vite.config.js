@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [react()],
-    //base: '/checkout/',
-    base: '/',
+    base: '/checkout/',
+    //base: '/',
 
     //base: '/digitel/',
     server: {
@@ -19,6 +19,6 @@ export default defineConfig({
         port: 5173, // Set your desired port for the preview server
     },
     build: {
-        outDir: "./server/ui/dist/",
+        outDir: "./bin/checkoutweb/",
     }
 })

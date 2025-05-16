@@ -1,11 +1,12 @@
-version: '3.8' # Specify Docker Compose version
-
 services:
   sypago_checkout:
-    image: orlandoiii/sypago_checkout:1.0.4 # Your Docker image name
-    container_name: sypago_checkout # (Optional) Custom container name
+    image: orlandoiii/sypago_checkout:1.0.8
     ports:
-      - "3500:3000"  # Expose port 8080 (adjust if your app uses a different port)
-    #volumes:
-     # - ./config:/app/config # Mount the host's config directory to the container's /app/config
-  
+      - "3500:3000"
+    volumes:
+      - /app/sypago_checkout/rest_api/config.json:/app/public/config.json
+      - /app/sypago_checkout/rest_api/checkoutweb:/app/checkoutweb
+
+    container_name: sypago_checkout
+    restart: always
+

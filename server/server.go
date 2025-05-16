@@ -4,43 +4,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sypago_checkout_server/libraries/config"
 	"sypago_checkout_server/libraries/sypago"
-	"sypago_checkout_server/ui"
+	"sypago_checkout_server/middlewares"
 	"syscall"
-
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 )
-
-func staticHandler(engine *gin.Engine) {
-	dist, _ := fs.Sub(ui.Dist, "dist")
-	fileServer := http.FileServer(http.FS(dist))
-
-	engine.Use(func(c *gin.Context) {
-		if !strings.Contains(c.Request.URL.Path, "request-sypago") {
-			// Check if the requested file exists
-			_, err := fs.Stat(dist, strings.TrimPrefix(c.Request.URL.Path, "/"))
-			if os.IsNotExist(err) {
-				// If the file does not exist, serve index.html
-				fmt.Println("File not found, serving index.html")
-				c.Request.URL.Path = "/"
-			} else {
-				// Serve other static files
-				fmt.Println("Serving other static files")
-			}
-
-			fileServer.ServeHTTP(c.Writer, c.Request)
-			c.Abort()
-		}
-	})
-}
 
 func SecurityHeaders() gin.HandlerFunc {
 
@@ -59,6 +34,13 @@ func SecurityHeaders() gin.HandlerFunc {
 func main() {
 	decimal.MarshalJSONWithoutQuotes = true
 
+	execPath, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+
+	execPath = filepath.Dir(execPath)
+
 	var done chan os.Signal = make(chan os.Signal, 1)
 
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
@@ -69,7 +51,13 @@ func main() {
 
 	router.Use(SecurityHeaders())
 
-	staticHandler(router)
+	checkoutDir := filepath.Join(execPath, "checkoutweb")
+
+	fmt.Println("Checkout Dir:", checkoutDir)
+
+	checkoutWebAssets := middlewares.NewCheckoutWebAssetsConfig(checkoutDir)
+
+	router.Use(middlewares.ServeStaticAssets(checkoutWebAssets))
 
 	router.POST("/request-sypago", func(c *gin.Context) {
 		fmt.Println("Request Sypago")
@@ -122,6 +110,8 @@ func main() {
 		c.JSON(http.StatusOK, sypagoResponse)
 
 	})
+
+	fmt.Println("Starting REST API server on port", config.GetConfig().ServiceInfo.HttpPort)
 
 	if config.GetConfig().SslConfig.EnabledSslHttp {
 

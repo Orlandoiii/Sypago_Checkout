@@ -16,10 +16,10 @@ async function LoadConfig() {
     const host = window.location.origin;
 
 
-    //let configRequest = await fetch(import.meta.env.BASE_URL + '/config.json');
+    let configRequest = await fetch(import.meta.env.BASE_URL + '/config.json');
 
 
-    let configRequest = await fetch("http://localhost:5173" + '/config.json');
+    //let configRequest = await fetch("http://localhost:3500" + '/config.json');
 
     let configJson = await configRequest.json();
 
