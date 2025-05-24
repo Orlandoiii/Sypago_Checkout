@@ -236,7 +236,8 @@ class SignalRCom {
             }
 
 
-            let result = await this.connection.invoke(methodName, transactionId, payAmt, receptUser, otp);
+            let result = await this.connection.invoke(methodName,
+                transactionId, payAmt, receptUser, otp);
             return result;
         } catch (err) {
             logger.error(err);

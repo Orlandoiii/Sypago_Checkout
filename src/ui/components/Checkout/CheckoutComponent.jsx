@@ -312,7 +312,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
         setOpenOtp(false);
     }
 
-
     async function onNotify(transactionStatusJson, hash) {
 
 
@@ -376,7 +375,6 @@ function CheckoutComponent({ isBlueprint = false, transactionId = "" }) {
 
 
     }
-
 
     async function onReconnected() {
 
